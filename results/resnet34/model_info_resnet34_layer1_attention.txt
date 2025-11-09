@@ -1,0 +1,25 @@
+============================================================
+MODEL CONFIGURATION
+============================================================
+
+ENCODER:
+  Architecture: resnet34
+  Layer: layer1
+  Parameters: 0 (frozen)
+
+DECODER:
+  Type: attention
+  Parameters: 250,147 (trainable)
+
+TRAINING CONFIG:
+  architecture: resnet34
+  layer_name: layer1
+  decoder_type: attention
+  img_size: 224
+  batch_size: 8
+  num_epochs: 30
+  lr: 0.001
+  weight_decay: 1e-05
+  device: mps
+
+============================================================

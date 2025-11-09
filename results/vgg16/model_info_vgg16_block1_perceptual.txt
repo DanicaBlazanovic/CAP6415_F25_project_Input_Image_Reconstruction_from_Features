@@ -1,0 +1,20 @@
+Run 1: Perceptual Loss Experiment
+==================================================
+
+Architecture: vgg16
+Layer: block1
+Feature shape: 64 x 112 x 112
+Decoder type: AttentionDecoder
+Decoder parameters: 233,667
+Transformer blocks: 4
+
+Loss Configuration:
+  - MSE weight: 0.5
+  - LPIPS weight: 0.5
+
+Training Configuration:
+  - Epochs: 2
+  - Learning rate: 0.001
+  - Optimizer: Adam
+  - Scheduler: ReduceLROnPlateau
+  - Device: mps

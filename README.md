@@ -131,7 +131,7 @@ $$L(\psi) = \frac{1}{N}\sum_{i=1}^{N} \|\mathbf{x}_i - g_\psi(f_\theta(\mathbf{x
 
 ### Decoder Architecture
 
-We use an attention-based decoder inspired by transformer architectures [4, 7 Ch.32]:
+We use an attention-based decoder inspired by transformer architectures [4, 7 Ch.26]:
 
 **Architecture components:**
 - Progressive upsampling via transposed convolutions

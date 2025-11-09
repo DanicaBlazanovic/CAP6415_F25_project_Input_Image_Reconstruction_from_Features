@@ -1,0 +1,25 @@
+============================================================
+MODEL CONFIGURATION
+============================================================
+
+ENCODER:
+  Architecture: vgg16
+  Layer: block2
+  Parameters: 0 (frozen)
+
+DECODER:
+  Type: attention
+  Parameters: 958,083 (trainable)
+
+TRAINING CONFIG:
+  architecture: vgg16
+  layer_name: block2
+  decoder_type: attention
+  img_size: 224
+  batch_size: 8
+  num_epochs: 30
+  lr: 0.001
+  weight_decay: 1e-05
+  device: cuda
+
+============================================================

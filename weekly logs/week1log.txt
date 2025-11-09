@@ -1,4 +1,4 @@
-[WEEK 1 LOG - CV Final Project: Input Image Reconstruction from Features
+WEEK 1 LOG - CV Final Project: Input Image Reconstruction from Features
 
 Project Setup & Research
 - Researched feature inversion techniques and read relevant papers
@@ -48,4 +48,4 @@ Total experiments: 14 across three architectures
 Code written: ~2000 lines across 8 modules and 3 scripts
 Deliverable: Complete feature inversion pipeline with evaluation
 
-***Disclaimer: This was done over a period of 2-3 weeks]
+***Disclaimer: This was done over a period of 2-3 weeks

@@ -1,0 +1,25 @@
+============================================================
+MODEL CONFIGURATION
+============================================================
+
+ENCODER:
+  Architecture: vit_base_patch16_224
+  Layer: block8
+  Parameters: 0 (frozen)
+
+DECODER:
+  Type: attention
+  Parameters: 34,621,827 (trainable)
+
+TRAINING CONFIG:
+  architecture: vit_base_patch16_224
+  layer_name: block8
+  decoder_type: attention
+  img_size: 224
+  batch_size: 8
+  num_epochs: 30
+  lr: 0.001
+  weight_decay: 1e-05
+  device: mps
+
+============================================================
