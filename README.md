@@ -166,10 +166,10 @@ Decoder capacity naturally scales with input feature dimensions, which contribut
 
 We use four complementary metrics to assess reconstruction quality [8]:
 
-**PSNR**: Peak Signal-to-Noise Ratio
-**SSIM**: Structural Similarity Index
-**LPIPS**: Learned Perceptual Image Patch Similarity
-**MSE**: Mean Squared Error
+PSNR: Peak Signal-to-Noise Ratio
+SSIM: Structural Similarity Index
+LPIPS: Learned Perceptual Image Patch Similarity
+MSE: Mean Squared Error
 
 
 | Metric | Formula | Range | Better | Interpretation |
