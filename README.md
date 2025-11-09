@@ -1,4 +1,6 @@
-# Feature Inversion Study: Analyzing Information Preservation Across CNN Layers
+# Input Image Reconstruction from Features: Cross-Architecture Analysis
+
+**Investigating optimal layer selection for decoder networks that reconstruct input images from intermediate feature representations across ResNet34, VGG16, and Vision Transformer architectures.**
 
 **CAP6415 - Computer Vision | Fall 2025**
 
@@ -39,7 +41,7 @@ This project investigates how much spatial information is preserved at different
 
 ### Hierarchical Feature Learning
 
-Convolutional neural networks learn hierarchical representations through progressive spatial downsampling and increasing semantic abstraction [1,, 7 Ch.24]. CNNs build features hierarchically:
+Convolutional neural networks learn hierarchical representations through progressive spatial downsampling and increasing semantic abstraction [1, 7 Ch.24]. CNNs build features hierarchically:
 
 - **Shallow layers:** Detect low-level features (edges, textures, colors) with high spatial resolution
 - **Middle layers:** Combine low-level features into parts and patterns
@@ -60,12 +62,29 @@ The quality of reconstruction reveals how much information about the original im
 Original DIV2K images (~2040×1356 average resolution, varying dimensions) are resized to 224×224 for computational efficiency [7 Ch.21]. This initial preprocessing results in anisotropic downsampling: approximately 9.1× vertically and 6.1× horizontally (~55× reduction in total pixel area). Networks then progressively downsample further:
 
 **ResNet34 downsampling:**
+
+Initial stem (conv1 + maxpool): 224×224 → 56×56 (stride-2 conv7×7 followed by stride-2 maxpool3×3)
+
 - **Layer1:** 56×56 (4× from input) → 3,136 spatial locations
 - **Layer2:** 28×28 (8× from input) → 784 spatial locations  
 - **Layer3:** 14×14 (16× from input) → 196 spatial locations
 - **Layer4:** 7×7 (32× from input) → 49 spatial locations
 
-This 64× reduction in spatial locations from layer1 to layer4 strongly limits reconstruction quality, as spatial information lost through pooling and striding operations is highly compressive and challenging to recover with our decoder architectures.
+**VGG16 downsampling:**
+
+Each block ends with stride-2 maxpool2×2:
+
+- **Block1:** 224×224 → 112×112 (2× from input) → 12,544 spatial locations
+- **Block2:** 112×112 → 56×56 (4× from input) → 3,136 spatial locations
+- **Block3:** 56×56 → 28×28 (8× from input) → 784 spatial locations
+- **Block4:** 28×28 → 14×14 (16× from input) → 196 spatial locations
+- **Block5:** 14×14 → 7×7 (32× from input) → 49 spatial locations
+
+**ViT downsampling:**
+
+Single initial patch embedding (16×16 patches): 224×224 → 14×14 tokens (196 spatial tokens, constant through all blocks)
+
+This 64× reduction in spatial locations from layer1 to layer4 (ResNet/VGG) strongly limits reconstruction quality, as spatial information lost through pooling and striding operations is highly compressive and challenging to recover with our decoder architectures.
 
 ---
 
@@ -112,7 +131,7 @@ $$L(\psi) = \frac{1}{N}\sum_{i=1}^{N} \|\mathbf{x}_i - g_\psi(f_\theta(\mathbf{x
 
 ### Decoder Architecture
 
-We use an attention-based decoder inspired by transformer architectures [4,7 Ch.32]:
+We use an attention-based decoder inspired by transformer architectures [4, 7 Ch.32]:
 
 **Architecture components:**
 - Progressive upsampling via transposed convolutions
@@ -122,15 +141,26 @@ We use an attention-based decoder inspired by transformer architectures [4,7 Ch.
 
 **Self-attention mechanism** [4]:
 
-For input tokens $\mathbf{T} \in \mathbb{R}^{N \times D}$:
+For input tokens $\mathbf{T} \in \mathbb{R}^{N \times D}$ (where $N$ is the number of spatial locations and $D$ is the feature dimension):
 
-$$\mathbf{Q} = \mathbf{T}\mathbf{W}_q^T, \quad \mathbf{K} = \mathbf{T}\mathbf{W}_k^T, \quad \mathbf{V} = \mathbf{T}\mathbf{W}_v^T$$
+$$\mathbf{Q} = \mathbf{T}\mathbf{W}_q, \quad \mathbf{K} = \mathbf{T}\mathbf{W}_k, \quad \mathbf{V} = \mathbf{T}\mathbf{W}_v$$
+
+where $\mathbf{W}_q, \mathbf{W}_k, \mathbf{W}_v \in \mathbb{R}^{D \times d_k}$ are learnable projection matrices, and $d_k = D / h$ is the dimension per attention head (where $h$ is the number of heads).
 
 $$\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}$$
 
 This allows the decoder to aggregate information across spatial locations, partially compensating for lost spatial resolution.
 
 **Note on decoder capacity:** CNN decoders range from 0.2M-15.4M parameters depending on input feature dimensions, while the ViT decoder is fixed at 34.6M parameters across all blocks. This capacity difference should be considered when comparing CNN vs ViT reconstruction efficiency - conclusions about ViT's efficiency may be partially attributable to decoder capacity rather than purely architectural advantages.
+
+**Decoder Input Protocol:**
+
+Decoders receive feature tensors directly from the encoder without intermediate projections or channel adaptation layers. No 1×1 convolutions or MLPs are used to equalize channel widths across architectures. This means:
+- ResNet layer1 features (64 channels) → Decoder with 64-channel input
+- VGG block5 features (512 channels) → Decoder with 512-channel input  
+- ViT block features (768 channels) → Decoder with 768-channel input
+
+Decoder capacity naturally scales with input feature dimensions, which contributes to the parameter count differences noted in architecture tables.
 
 ### Evaluation Metrics
 
@@ -145,9 +175,19 @@ We use four complementary metrics to assess reconstruction quality [8]:
 
 *SSIM is typically in [0,1] but can be negative in edge cases.
 
-PSNR and MSE measure numerical accuracy, SSIM captures structural similarity, and LPIPS best correlates with human perception of image quality [8].
+**Metrics computation protocol:** 
 
-**Metrics computation protocol:** Before computing PSNR, SSIM, and LPIPS, we denormalize reconstructed images (reversing ImageNet normalization) and clamp values to [0,1] range to ensure fair comparison with original images.
+Before computing PSNR, SSIM, and LPIPS, we denormalize reconstructed images (reversing ImageNet normalization) and clamp values to [0,1] range to ensure fair comparison with original images. All metrics computed on:
+- **Color space:** RGB (3 channels)
+- **Image size:** 224×224 (no resizing after reconstruction)
+- **LPIPS backbone:** AlexNet with perceptual feature distance (images normalized to [-1,1] for LPIPS computation)
+- **Channel ordering:** Channels-first for computation (C,H,W), converted to channels-last (H,W,C) for PSNR/SSIM via scikit-image
+
+**Statistical reporting:** Reported values are mean ± standard deviation computed across the 100-image test set (DIV2K_valid_HR). The ± values represent image-wise variability (standard deviation across individual test images), not training variance or epoch-to-epoch fluctuations. Each metric is computed once per image on the final trained model, then aggregated: mean captures central tendency, standard deviation captures reconstruction consistency across different image content.
+
+**Loss function and metric interpretation:** Our decoders optimize MSE loss during training, which naturally correlates with PSNR performance (PSNR = 10 log₁₀(1/MSE)). SSIM and LPIPS metrics provide complementary perspectives on structural similarity and perceptual quality respectively, but were not directly optimized during training. Therefore, claims about perceptual quality (LPIPS, visual assessment) should be interpreted as observed correlations rather than optimized objectives. For perceptually-optimized reconstruction, alternative loss functions (e.g., perceptual loss, GAN-based losses) would be required.
+
+PSNR and MSE measure numerical accuracy, SSIM captures structural similarity, and LPIPS best correlates with human perception of image quality [8].
 
 ---
 
@@ -188,7 +228,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 
 ## Architectures Tested
 
-### 1. ResNet34 [1,7 Ch.24]
+### 1. ResNet34 [1, 7 Ch.24]
 
 **Layers Tested:** layer1, layer2, layer3, layer4
 
@@ -204,7 +244,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 - Uses basic blocks (two 3×3 convolutions per block)
 - Gradual downsampling (2× per stage via stride-2 convolutions)
 
-### 2. VGG16 [2,7 Ch.24]
+### 2. VGG16 [2, 7 Ch.24]
 
 **Blocks Tested:** block1, block2, block3, block4, block5
 
@@ -221,7 +261,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 - Aggressive downsampling (2× per block via max pooling)
 - Larger feature maps in early layers compared to ResNet34
 
-### 3. Vision Transformer (ViT)  [5,7 Ch.26]
+### 3. Vision Transformer (ViT)  [5, 7 Ch.26]
 
 **Blocks Tested:** block0, block1, block5, block8, block11
 
@@ -232,6 +272,18 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 | block5 | 768 × 14 × 14 | 16×16 patches | 197 (196+CLS) | 34.6M |
 | block8 | 768 × 14 × 14 | 16×16 patches | 197 (196+CLS) | 34.6M |
 | block11 | 768 × 14 × 14 | 16×16 patches | 197 (196+CLS) | 34.6M |
+
+
+**ViT Feature Extraction Details:**
+
+For reconstruction, we extract features after transformer block $N$ as follows:
+1. Images are split into 16×16 patches, embedded to 768 dimensions
+2. Positional embeddings are added (learned during ImageNet pre-training)
+3. Features pass through transformer blocks 0 to $N$
+4. The class token (first token) is dropped, leaving 196 patch tokens
+5. Tokens are reshaped from sequence format [196, 768] to spatial format [768, 14, 14]
+
+**Important:** Positional embeddings from the encoder are NOT re-added when feeding features to the decoder. The decoder learns to reconstruct from the spatially-reshaped token features directly, which may lose some positional information encoded during pre-training. This represents a potential limitation compared to approaches that maintain explicit positional encodings through the reconstruction pipeline.
 
 **Architecture Characteristics:**
 - Patch-based architecture processes images as sequences of 16×16 patches
@@ -250,7 +302,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 
 #### Quantitative Results
 
-| Layer | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Training Time (min) | Parameters |
+| Layer | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Training Time (min) | Decoder Params |
 |-------|-------------|--------|---------|---------------------|------------|
 | **layer1** | **14.32 ± 0.94** | **0.474 ± 0.045** | **0.455 ± 0.031** | 69.8 | 250K |
 | layer2 | 14.04 ± 0.86 | 0.390 ± 0.042 | 0.555 ± 0.029 | 30.0 | 975K |
@@ -267,7 +319,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 2. **Progressive degradation:** Reconstruction quality degrades monotonically with depth
 3. **SSIM drops 42.6%** from layer1 to layer4, indicating severe structural information loss
 4. **LPIPS increases 90.7%** from 0.455 to 0.867, showing perceptual quality severely degrades
-5. **Decoder-normalized efficiency:** Layer1 achieves 17.5K params/dB while layer4 requires 1,177K params/dB (note: this metric is decoder-size dependent and not architecture-invariant)
+5. **Within-architecture parameter efficiency:** Layer1 achieves 17.5K params/dB while layer4 requires 1,177K params/dB. **Note:** This metric is decoder-size dependent and should only be compared within the same architecture (ResNet34 layers in this case), not across architectures (e.g., ResNet vs VGG vs ViT), as decoder capacity scales differently with feature map dimensions.
 
 #### Visual Quality Analysis
 
@@ -278,13 +330,31 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 
 The reconstruction quality correlates strongly with spatial resolution. Layer1 with 3,136 spatial locations retains fine-grained details. Layer4 with only 49 spatial locations can only capture coarse color distributions.
 
+
+- **Layer4 (7×7 features):** Heavy blurring, abstract color patches, severely degraded structure
+
+The reconstruction quality correlates strongly with spatial resolution. Layer1 with 3,136 spatial locations retains fine-grained details. Layer4 with only 49 spatial locations can only capture coarse color distributions.
+
+![ResNet34 Reconstruction Comparison](results/resnet34/figures/resnet34_layer1_attention_reconstruction.png)
+*Figure 1: ResNet34 Layer1 reconstruction examples showing high-quality preservation of spatial details.*
+
+![ResNet34 Layer2 Reconstruction](results/resnet34/figures/resnet34_layer2_attention_reconstruction.png)
+*Figure 2: ResNet34 Layer2 reconstructions with slight quality degradation.*
+
+![ResNet34 Layer3 Reconstruction](results/resnet34/figures/resnet34_layer3_attention_reconstruction.png)
+*Figure 3: ResNet34 Layer3 reconstructions showing significant blurring.*
+
+![ResNet34 Layer4 Reconstruction](results/resnet34/figures/resnet34_layer4_attention_reconstruction.png)
+*Figure 4: ResNet34 Layer4 reconstructions with severe quality loss.*
+
+---
 ---
 
 ### VGG16 Results
 
 #### Quantitative Results
 
-| Block | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Training Time (min) | Parameters |
+| Block | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Training Time (min) | Decoder Params |
 |-------|-------------|--------|---------|---------------------|------------|
 | **block1** | **14.45 ± 2.27** | **0.530 ± 0.121** | **0.398 ± 0.109** | 162.8 | ~200K |
 | block2 | 14.34 ± 0.94 | 0.495 ± 0.045 | 0.432 ± 0.031 | 12.9 | ~500K |
@@ -312,6 +382,24 @@ The reconstruction quality correlates strongly with spatial resolution. Layer1 w
 - **Block4 (14×14 features):** Significant quality loss, details smoothed
 - **Block5 (7×7 features):** Poor reconstruction, only coarse structure preserved
 
+
+- **Block5 (7×7 features):** Poor reconstruction, only coarse structure preserved
+
+![VGG16 Block2 Reconstruction](results/vgg16/figures/vgg16_block2_attention_reconstruction.png)
+*Figure 5: VGG16 Block2 reconstruction examples showing excellent quality.*
+
+![VGG16 Block3 Reconstruction](results/vgg16/figures/vgg16_block3_attention_reconstruction.png)
+*Figure 6: VGG16 Block3 reconstructions with moderate quality.*
+
+![VGG16 Block4 Reconstruction](results/vgg16/figures/vgg16_block4_attention_reconstruction.png)
+*Figure 7: VGG16 Block4 reconstructions showing quality degradation.*
+
+![VGG16 Block5 Reconstruction](results/vgg16/figures/vgg16_block5_attention_reconstruction.png)
+*Figure 8: VGG16 Block5 reconstructions with poor quality.*
+
+**Note:** Block1 reconstruction figure not available due to visualization failure during Colab training.
+
+---
 ---
 
 ### ViT Results
@@ -354,8 +442,27 @@ Unlike CNNs that lose information through spatial downsampling, ViT processes al
 - **Block1:** Very similar to block0, minimal visible difference
 - **Block5:** Noticeable blurring, colors preserved but details softer
 - **Block8:** Significant detail loss, structure maintained but textures smoothed
+- **Block11:** Heavy abstraction, rec ognizable objects but fine details lost
+
+
 - **Block11:** Heavy abstraction, recognizable objects but fine details lost
 
+![ViT Block0 Reconstruction](results/vit_base_patch16_224/figures/vit_base_patch16_224_block0_attention_reconstruction.png)
+*Figure 9: ViT Block0 reconstruction examples showing competitive quality with CNNs.*
+
+![ViT Block1 Reconstruction](results/vit_base_patch16_224/figures/vit_base_patch16_224_block1_attention_reconstruction.png)
+*Figure 10: ViT Block1 reconstructions, very similar to Block0.*
+
+![ViT Block5 Reconstruction](results/vit_base_patch16_224/figures/vit_base_patch16_224_block5_attention_reconstruction.png)
+*Figure 11: ViT Block5 reconstructions with noticeable blurring.*
+
+![ViT Block8 Reconstruction](results/vit_base_patch16_224/figures/vit_base_patch16_224_block8_attention_reconstruction.png)
+*Figure 12: ViT Block8 reconstructions showing significant detail loss.*
+
+![ViT Block11 Reconstruction](results/vit_base_patch16_224/figures/vit_base_patch16_224_block11_attention_reconstruction.png)
+*Figure 13: ViT Block11 reconstructions with heavy abstraction.*
+
+---
 ---
 
 ### Cross-Architecture Comparison
@@ -368,6 +475,13 @@ Unlike CNNs that lose information through spatial downsampling, ViT processes al
 | VGG16 | block2 | 14.34 | 0.495 | 0.432 | 3,136 | 2nd |
 | ResNet34 | layer1 | 14.32 | 0.474 | 0.455 | 3,136 | 3rd |
 | ViT | block0 | 14.29 | 0.454 | 0.509 | 196 | 4th |
+
+
+#### Important Methodological Considerations
+
+**Decoder Capacity Differences:** CNN decoders vary from 0.2M-15.4M parameters (scaled based on input feature dimensions), while the ViT decoder is fixed at 34.6M parameters across all blocks. This represents a 100-170× capacity difference at matched spatial resolutions. Consequently, direct cross-architecture efficiency comparisons should be interpreted cautiously—claims about ViT's "efficiency" in achieving competitive performance with fewer spatial tokens may be partially attributable to its substantially larger decoder capacity rather than purely architectural advantages of self-attention mechanisms. For fair capacity-controlled comparisons, future work should implement decoders with matched parameter counts across architectures.
+
+**Optimization Bias:** All models were trained with MSE loss, which directly optimizes PSNR. Results for other metrics (SSIM, LPIPS) reflect observed correlations rather than optimization targets. Claims about perceptual quality should be interpreted accordingly.
 
 #### Key Cross-Architecture Insights
 
@@ -398,9 +512,9 @@ Unlike CNNs that lose information through spatial downsampling, ViT processes al
 
 ## Key Findings
 
-### 1. VGG16 Block1 Achieves Best Overall Reconstruction Quality
+### 1. VGG16 Block1 Achieves Best Reconstruction Quality Under Our Experimental Setup
 
-VGG16 block1 achieves the highest reconstruction quality across all architectures with **14.45 dB PSNR** and **0.530 SSIM**:
+VGG16 block1 achieves the highest reconstruction quality across all tested architectures **given our MSE loss function, attention-based decoder design, and computational constraints** with **14.45 dB PSNR** and **0.530 SSIM**:
 
 - **VGG16 block1** (112×112, 12,544 locations): 14.45 dB PSNR, 0.530 SSIM, 0.398 LPIPS
 - **VGG16 block2** (56×56, 3,136 locations): 14.34 dB PSNR, 0.495 SSIM, 0.432 LPIPS
@@ -410,6 +524,7 @@ VGG16 block1 achieves the highest reconstruction quality across all architecture
 VGG16 block1 leads across all metrics, confirming that **spatial resolution is the dominant factor** for CNN reconstruction quality.
 
 **Note:** PSNR differences <0.1 dB (e.g., VGG block2 vs ResNet layer1: 0.02 dB) are typically negligible and within measurement noise.
+**Important qualifier:** This ranking reflects performance under our specific experimental conditions (MSE loss, 4-block attention decoders, 30-epoch training on DIV2K). Different decoder architectures (e.g., larger capacity decoders, GAN-based decoders), alternative loss functions (e.g., perceptual loss, adversarial loss), or extended training could potentially reorder these rankings.
 
 ### 2. Spatial Resolution Dominates for CNNs, But With Diminishing Returns
 
@@ -433,7 +548,7 @@ ViT block0 achieves competitive reconstruction (14.29 dB) with only **196 spatia
 
 **Implication:** Global self-attention mechanisms enable efficient spatial information preservation. Each token attends to all others, creating rich spatial relationships that partially compensate for reduced resolution compared to local convolutions.
 
-**Important caveat:** ViT's efficiency should be interpreted carefully, as the ViT decoder (34.6M parameters) is 100-170× larger than CNN decoders at matched resolution (200K-250K). This capacity difference may contribute to ViT's competitive performance and complicates direct architectural comparisons.
+**Critical Caveat - Decoder Capacity Confound:** ViT's apparent efficiency must be interpreted carefully. The ViT decoder (34.6M parameters) is 100-170× larger than CNN decoders at matched resolution (200K-250K parameters). This substantial capacity difference may contribute significantly to ViT's competitive performance. The observed efficiency cannot be attributed solely to architectural advantages of self-attention—decoder capacity effects are confounded with architectural effects in this study. Controlled experiments with capacity-matched decoders would be required to isolate the contribution of self-attention mechanisms.
 
 ### 4. Progressive Quality Degradation Across All Architectures
 
@@ -475,7 +590,7 @@ For matched spatial resolutions, different architectures achieve similar reconst
 - VGG16 block5: 12.68 dB PSNR, 0.273 SSIM
 - **Difference: 0.04 dB PSNR, 0.001 SSIM (negligible)**
 
-This validates that **spatial resolution is the primary constraint for CNNs**, not architectural choices like residual connections or normalization strategies. When spatial resolution is matched, reconstruction quality converges regardless of architecture, at least with our MSE loss and decoder design.
+This validates that **spatial resolution is the primary constraint for CNNs**, not architectural choices like residual connections or normalization strategies. When spatial resolution is matched, reconstruction quality converges regardless of architecture **under our experimental conditions** (MSE loss, attention-based decoders with 4 transformer blocks, DIV2K dataset, 30-epoch training). This convergence may not hold with different decoder architectures, loss functions (e.g., perceptual losses), or datasets. Additionally, this analysis does not account for potential differences in channel width, receptive field sizes, or feature abstraction patterns across architectures.
 
 ### 7. Training Time Scales with Feature Map Size and Channel Count
 
@@ -502,15 +617,35 @@ Based on our comprehensive experiments across three architectures and 14 layers:
 **For computational efficiency:**
 - **ResNet34 layer1 offers best quality-per-resource ratio**: Near-optimal quality with standard GPU
 - Avoid deep layers (layer3/4, block4/5) - poor quality despite high computational cost
-- ViT offers competitive quality with moderate GPU requirements (32 min training vs 70 min for ResNet layer1)
+- ViT offers competitive quality with moderate GPU requirements (32 min training vs 70 min for ResNet layer1), though decoder capacity differences complicate direct comparisons
 
 **For research applications:**
 - Features from first 1-2 layers/blocks are most invertible (~14.3 dB PSNR)
 - Spatial resolution is the dominant bottleneck for CNNs
-- Global attention in ViT provides efficiency advantages (14.29 dB with only 196 tokens), though decoder capacity differences complicate direct comparisons
+- Global attention in ViT provides apparent efficiency advantages (14.29 dB with only 196 tokens), though this may be confounded by larger decoder capacity
 - Decoder complexity shows diminishing returns beyond basic attention mechanisms
 - PSNR differences <0.1 dB are typically negligible and within measurement noise
 - Parameter efficiency metrics (params/dB) are decoder-size dependent and should not be compared across architectures
+- MSE-optimized models naturally achieve high PSNR; perceptual optimization requires alternative loss functions
+
+**Methodological notes for reproducibility:**
+- Report decoder capacity alongside reconstruction metrics
+- Use capacity-matched decoders for fair cross-architecture comparisons
+- Specify optimization objective (MSE vs perceptual loss) when interpreting perceptual metrics
+- Report statistical significance of metric differences (mean differences should exceed std)
+
+---
+
+## Hardware and Training Configuration
+
+**Computing Environment:**
+- **GPU:** NVIDIA A100 (40GB) via Google Colab Pro for VGG16 block1; standard Colab GPU (16GB) for all other experiments
+- **CPU:** Mac M1 for local development and testing
+- **Precision:** FP32 (no mixed precision)
+- **Framework:** PyTorch 2.0+ with cuDNN backend
+- **Batch size:** 8 (standard layers), 1 (VGG16 block1 due to memory constraints)
+
+**Note on timing comparisons:** Reported training times are machine-specific and depend on hardware, precision settings, dataloader configuration, and cuDNN optimization. These should be interpreted as relative comparisons within this study rather than absolute performance benchmarks. Times may vary significantly on different hardware configurations.
 
 ---
 

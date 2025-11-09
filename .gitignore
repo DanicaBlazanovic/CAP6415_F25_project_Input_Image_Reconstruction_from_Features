@@ -8,6 +8,6 @@ __pycache__/
 *.log
 Icon?
 .DS_Store
-results/
-/results
 /data
+results/*/checkpoints/*.pth
+Icon?

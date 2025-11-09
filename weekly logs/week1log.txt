@@ -1,0 +1,51 @@
+[WEEK 1 LOG - CV Final Project: Input Image Reconstruction from Features
+
+Project Setup & Research
+- Researched feature inversion techniques and read relevant papers
+- Reviewed transformer architectures and ViT paper
+- Set up GitHub repository and project structure
+- Created conda environment and installed dependencies (PyTorch, timm, lpips, scikit-image)
+
+Dataset Preparation
+- Downloaded DIV2K dataset (800 train, 100 validation images)
+- Implemented dataset loading and preprocessing pipeline
+- Created train/val/test split with proper data augmentation
+- Verified cross-platform compatibility
+
+Model Architecture Development
+- Implemented FeatureExtractor for ResNet34, VGG16, and ViT
+- Created attention-based decoder with transformer blocks and self-attention mechanisms
+- Configured multi-architecture feature extraction pipeline
+
+Training & Evaluation Pipeline
+- Implemented complete training loop with MSE loss
+- Set up Adam optimizer with learning rate scheduling
+- Added checkpoint saving and validation monitoring
+- Implemented metrics calculator (PSNR, SSIM, LPIPS, MSE)
+- Created proper denormalization and metric computation protocol
+
+Experiment Automation
+- Built automated experiment runner for multi-layer testing
+- Set up results directory structure and CSV logging
+- Created visualization scripts for reconstruction comparisons
+- Implemented summary report generation
+
+Experiments Completed
+- ResNet34: 4 layers tested
+- VGG16: 5 blocks tested (block1 required Google Colab Pro A100 GPU)
+- ViT: 5 blocks tested
+- Total: 14 experiments across three architectures
+
+Analysis & Documentation
+- Created comprehensive README with methodology and results
+- Documented cross-architecture comparison and findings
+- Added hardware specifications and training details
+- Generated reconstruction visualizations for all experiments
+- Set up DVC for large file management
+
+Week 1 Summary
+Total experiments: 14 across three architectures
+Code written: ~2000 lines across 8 modules and 3 scripts
+Deliverable: Complete feature inversion pipeline with evaluation
+
+***Disclaimer: This was done over a period of 2-3 weeks]
