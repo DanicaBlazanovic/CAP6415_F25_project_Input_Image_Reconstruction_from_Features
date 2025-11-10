@@ -13,8 +13,8 @@ Loss Configuration:
   - LPIPS weight: 0.5
 
 Training Configuration:
-  - Epochs: 2
+  - Epochs: 30
   - Learning rate: 0.001
   - Optimizer: Adam
   - Scheduler: ReduceLROnPlateau
-  - Device: mps
+  - Device: cuda

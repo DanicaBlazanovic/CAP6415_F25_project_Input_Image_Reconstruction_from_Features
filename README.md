@@ -642,6 +642,126 @@ Based on our comprehensive experiments across three architectures and 14 layers:
 
 ---
 
+## Enhanced Experiments: Perceptual Loss Investigation
+
+Following the baseline experiments, we conducted a series of systematic improvements to investigate whether alternative loss functions and architectural modifications can enhance reconstruction quality beyond the MSE-optimized baseline.
+
+### Run 1: VGG16 Block1 with Perceptual Loss (MSE + LPIPS)
+
+**Objective:** Isolate the contribution of perceptual loss (LPIPS) to reconstruction quality by training with combined MSE + LPIPS loss instead of MSE alone.
+
+**Hypothesis:** Optimizing for perceptual quality (LPIPS) in addition to pixel accuracy (MSE) will produce reconstructions that better match human perception, potentially at the cost of numerical PSNR.
+
+#### Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Architecture | VGG16 block1 |
+| Feature Shape | 64 × 112 × 112 |
+| Decoder | AttentionDecoder (4 transformer blocks) |
+| Decoder Parameters | 233,667 |
+| Loss Function | 0.5 × MSE + 0.5 × LPIPS (AlexNet backbone) |
+| Training Epochs | 30 |
+| Initial Learning Rate | 0.001 |
+| LR Schedule | ReduceLROnPlateau → 0.0005 at epoch 29 |
+| Optimizer | Adam (β₁=0.9, β₂=0.999) |
+| Device | CUDA (A100 40GB via Google Colab Pro) |
+| Training Time | 163.1 minutes (~2.7 hours) |
+| Batch Size | 1 (limited by 112×112 feature map memory) |
+
+#### Results
+
+**Test Set Performance (100 images from DIV2K_valid_HR):**
+
+| Metric | Run 1 (MSE + LPIPS) | Baseline (MSE only) | Δ Change | % Change |
+|--------|---------------------|---------------------|----------|----------|
+| **PSNR (dB)** ↑ | 13.93 ± 2.27 | 14.45 ± 2.27 | **-0.52** | -3.6% |
+| **SSIM** ↑ | 0.565 ± 0.121 | 0.530 ± 0.121 | **+0.035** | +6.6% |
+| **LPIPS** ↓ | 0.272 ± 0.080 | 0.398 ± 0.109 | **-0.126** | **-31.7%** |
+| **MSE** ↓ | 0.0462 ± 0.0243 | 0.0409 ± 0.0243 | +0.0053 | +13.0% |
+
+**↑ Higher is better | ↓ Lower is better**
+
+#### Training Dynamics
+
+**Loss convergence:**
+- Final training loss: 0.506 (MSE: 0.866, LPIPS: 0.146)
+- Final validation loss: 0.487 (MSE: 0.833, LPIPS: 0.142)
+- Best epoch: 30 (final epoch)
+- Learning rate reduction triggered at epoch 29 (0.001 → 0.0005)
+
+**Training stability:**
+- Smooth convergence with no overfitting
+- Combined loss balances pixel accuracy and perceptual quality
+- LPIPS component decreased more rapidly than MSE component
+
+#### Visual Quality Analysis
+
+![Baseline vs Run 1 Comparison](results/vgg16/figures_perceptual/baseline_vs_run1_comparison.png)
+
+**Observed improvements in Run 1:**
+- **Sharper textures:** Fruit surfaces, animal fur, foliage show finer detail
+- **Better color saturation:** More vibrant and natural colors across all test images
+- **Reduced artifacts:** Fewer muddy/blurred patches in complex scenes (beaches, crowds)
+- **Enhanced edges:** Crisper boundaries between objects and backgrounds
+
+**Observed trade-offs:**
+- Slightly noisier in flat regions (sky, water) due to perceptual optimization
+- Some fine details sacrificed for overall perceptual coherence
+
+#### Key Findings
+
+##### Significant Perceptual Quality Gains
+
+**LPIPS improved 31.7%** (0.398 → 0.272):
+- Largest improvement among all metrics
+- Reconstruction quality now significantly closer to human perception
+- Visual inspection confirms sharper, more realistic images
+
+**SSIM improved 6.6%** (0.530 → 0.565):
+- Better structural similarity to ground truth
+- Indicates improved preservation of edges, patterns, and textures
+- Complements LPIPS findings
+
+##### Trade-off: Pixel Accuracy Decreased
+
+**PSNR decreased 3.6%** (14.45 → 13.93 dB):
+- Small reduction in numerical pixel accuracy
+- However, 0.52 dB difference is below typical perceptual threshold (~1 dB)
+- The perceptual gains far outweigh this minor PSNR loss
+
+**MSE increased 13.0%**:
+- Expected behavior when optimizing for perceptual quality
+- Perceptual loss allows slightly higher pixel errors if result looks better
+
+##### Interpretation: Success of Perceptual Loss
+
+This experiment demonstrates the **fundamental trade-off between pixel accuracy (PSNR/MSE) and perceptual quality (LPIPS/SSIM)**:
+
+1. **MSE-only loss** (baseline) optimizes for pixel-perfect reconstruction → higher PSNR but less perceptually pleasing
+2. **MSE + LPIPS loss** (Run 1) optimizes for human perception → slightly lower PSNR but significantly better visual quality
+
+**The 31.7% LPIPS improvement represents a major enhancement in reconstruction quality as perceived by humans**, which is the ultimate goal for image reconstruction applications (photography, medical imaging, super-resolution).
+
+**Important qualifier:** This ranking reflects performance under our specific experimental conditions (MSE+LPIPS loss with equal weighting, 4-block attention decoder, 30-epoch training on DIV2K). Different loss weightings (e.g., 0.3 MSE + 0.7 LPIPS), decoder architectures, or training durations could yield different PSNR/LPIPS trade-offs.
+
+#### Practical Implications
+
+**When to use perceptual loss:**
+- Applications where human perception matters (photo enhancement, artistic reconstruction)
+- When visual quality is more important than numerical metrics
+- Scenarios requiring sharp textures and vibrant colors
+
+**When MSE-only may be preferable:**
+- Medical imaging (pixel accuracy critical)
+- Scientific applications requiring exact reconstruction
+- Benchmarks that prioritize PSNR over perceptual quality
+
+
+---
+
+
+
 ## Hardware and Training Configuration
 
 **Computing Environment:**

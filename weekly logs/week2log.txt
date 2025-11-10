@@ -1,0 +1,40 @@
+WEEK 2 LOG - CV Final Project: Input Image Reconstruction from Features
+
+Run 1: Perceptual Loss Investigation
+
+Implementation
+- Created train_perceptual.py with combined MSE + LPIPS loss (0.5 + 0.5 weighting)
+- Implemented LPIPS using AlexNet backbone
+- Built run_perceptual_vgg_block1.py experiment runner
+- Created evaluate_perceptual_vgg_block1.py for test set evaluation
+- Developed generate_perceptual_comparison.py for baseline vs Run 1 visualization
+- Built Colab notebook for A100 GPU training
+
+Training
+- Device: Google Colab Pro A100 (40GB)
+- Configuration: VGG16 block1, 30 epochs, batch size 1, lr 0.001
+- Training time: 163.1 minutes
+- Learning rate reduced to 0.0005 at epoch 29
+- Checkpoints: best model plus epochs 10, 20, 30
+
+Results
+- Test set: 100 images from DIV2K_valid_HR
+- PSNR: 13.93 dB (baseline: 14.45 dB, -0.52 dB)
+- SSIM: 0.565 (baseline: 0.530, +0.035)
+- LPIPS: 0.272 (baseline: 0.398, -0.126, -31.7% improvement)
+- Visual analysis: sharper textures, better colors, fewer artifacts
+
+Technical Issues
+- MPS memory errors on Mac M1: used CPU for evaluation
+- Batch size 1 required for 112x112 features
+- CPU evaluation: 15 minutes for 100 images
+
+Documentation
+- Added complete Run 1 section to README
+- Updated with configuration, results, visual analysis
+- Documented PSNR vs LPIPS trade-off
+
+Week 2 Summary
+New code: 4 Python files, 1 notebook, ~1200 lines
+Experiment: 1 complete 30-epoch run
+Key result: 31.7% perceptual quality improvement
