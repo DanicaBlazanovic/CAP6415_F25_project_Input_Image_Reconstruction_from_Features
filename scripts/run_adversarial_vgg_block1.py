@@ -107,7 +107,7 @@ from dataset import get_dataloaders
 
 
 def save_model_info(config, save_path):
-     """
+    """
     Save comprehensive experiment configuration to text file.
     
     This function documents all hyperparameters, model architectures, and
@@ -157,8 +157,9 @@ def save_model_info(config, save_path):
         Layer: block1
         Feature shape: 64 x 112 x 112
         Decoder parameters: 233,667
-        ...
+        
     """
+    
     # Convert to Path object for cross-platform compatibility
     # pathlib handles Windows backslashes and Unix forward slashes automatically
     save_path = Path(save_path)
