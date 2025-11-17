@@ -761,7 +761,72 @@ This experiment demonstrates the **fundamental trade-off between pixel accuracy 
 ---
 
 
+### Run 2: VGG16 Block1 with Adversarial Loss (GAN-based Reconstruction)
 
+**Objective:** Investigate whether adversarial training can produce more photorealistic reconstructions by introducing a discriminator network that encourages perceptually convincing outputs beyond pixel-level accuracy.
+
+**Hypothesis:** Combining adversarial loss with reconstruction loss will produce outputs that are more perceptually realistic, potentially improving LPIPS and visual quality metrics even if PSNR decreases. The discriminator provides an implicit perceptual loss by learning to distinguish real from reconstructed images.
+
+#### Motivation and Related Work
+
+Generative Adversarial Networks (GANs) have demonstrated remarkable success in image generation tasks where perceptual quality matters more than pixel-perfect reconstruction [10, 11]. In the context of super-resolution and image reconstruction, adversarial training has been shown to recover fine textures and high-frequency details that are often lost with MSE-only optimization [10].
+
+The adversarial approach introduces a minimax game between:
+- **Generator (Decoder):** Learns to reconstruct images that fool the discriminator
+- **Discriminator:** Learns to distinguish real images from reconstructed images
+
+This framework encourages the decoder to capture the distribution of natural images rather than simply minimizing pixel-wise error.
+
+
+#### Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Architecture | VGG16 block1 |
+| Feature Shape | 64 × 112 × 112 |
+| Generator (Decoder) | AttentionDecoder (4 transformer blocks) |
+| Generator Parameters | 233,667 |
+| Discriminator | PatchGAN-style discriminator |
+| Discriminator Parameters | *[To be determined after training]* |
+| Loss Function | λ_MSE × MSE + λ_adv × Adversarial Loss |
+| Loss Weights | λ_MSE = 1.0, λ_adv = 0.01 |
+| Training Epochs | 30 |
+| Optimizer | Adam for both G and D |
+| Optimizer Settings | beta1=0.5, beta2=0.999 (standard for GANs) |
+| Learning Rates | G: 0.001, D: 0.001 |
+| LR Scheduler | ReduceLROnPlateau (factor=0.5, patience=5) |
+| Device | CUDA (A100 40GB via Google Colab Pro) |
+| Training Time | *[To be determined]* |
+| Batch Size | 1 (limited by 112×112 feature map memory) |
+
+#### Training Strategy
+
+Following the approach from SRGAN [10] and Pix2Pix [11], we implement the following adversarial training procedure:
+
+1. **Adversarial Loss:** Binary cross-entropy with logits (BCEWithLogitsLoss) encouraging reconstructions to be classified as "real"
+2. **Reconstruction Loss:** MSE loss maintaining fidelity to ground truth
+3. **Combined Objective:** Total_Loss = 1.0 × MSE + 0.01 × Adversarial
+4. **Training Schedule:** Alternating discriminator and generator updates (1:1 ratio per batch)
+5. **Label Smoothing:** Real images labeled as 0.9 (instead of 1.0) for training stability
+6. **Learning Rate Adaptation:** ReduceLROnPlateau scheduler reduces LR by 0.5× after 5 epochs without improvement
+
+The discriminator architecture is based on PatchGAN [11], which classifies whether 26×26 local image patches are real or reconstructed, encouraging high-frequency detail preservation across the entire image.
+
+**Key Implementation Details:**
+- Generator optimizes: MSE (pixel accuracy) + weighted adversarial loss (realism)
+- Discriminator optimizes: Binary classification (real vs. fake images)
+- Lower beta1=0.5 for Adam optimizer follows GAN best practices for training stability
+- Discriminator sees real images with label smoothing (0.9) to prevent overconfidence
+
+
+
+
+
+
+
+
+
+---
 ## Hardware and Training Configuration
 
 **Computing Environment:**
@@ -904,10 +969,15 @@ CV_Final_Project/
 │   │   └── all_experiments_summary.csv  # Combined results
 │   │
 │   ├── vgg16/
+│   │   ├── checkpoints/          # Baseline MSE-trained models
+│   │   ├── figures/              # Standard reconstruction visualizations
+│   │   ├── figures_perceptual/   # Perceptual loss experiment visualizations
+│   │   ├── figures_adversarial/  # GAN-based experiment visualizations
+│   │   ├── metrics/              # CSV files with numerical results
 │   │   └── ...                   # Same structure for VGG16
 │   │
 │   └── vit_base_patch16_224/
-│       └── ...                   # Same structure for ViT
+│       └── ...                   # Same structure for ViTor ViT
 │
 ├── requirements.txt              # Python dependencies
 ├── .gitignore                    # Git ignore patterns

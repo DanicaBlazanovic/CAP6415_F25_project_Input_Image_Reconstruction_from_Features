@@ -38,3 +38,46 @@ Week 2 Summary
 New code: 4 Python files, 1 notebook, ~1200 lines
 Experiment: 1 complete 30-epoch run
 Key result: 31.7% perceptual quality improvement
+
+---
+
+Run 2: Adversarial Training Implementation
+
+Implementation
+- Created discriminator.py with PatchGAN architecture (26×26 patch classification)
+- Developed train_adversarial.py with AdversarialTrainer class
+- Built run_adversarial_vgg_block1.py experiment runner with 4-panel loss visualization
+- Implemented alternating G/D optimization with 1:1 update ratio
+- Applied label smoothing (0.9 for real images) for training stability
+
+Configuration
+- Architecture: VGG16 block1 (64×112×112 features)
+- Loss: Combined MSE + Adversarial (λ_MSE=1.0, λ_adv=0.01)
+- Optimizer: Adam (beta1=0.5, beta2=0.999) for both G and D
+- Learning rate: 0.001 with ReduceLROnPlateau scheduling
+- Training: 30 epochs, batch size 1, A100 40GB GPU
+
+Training Status
+- Currently running on Google Colab Pro A100
+- Expected completion: [add when available]
+- Results will be added to README upon completion
+
+Concurrent Research Activity
+- Conducting literature review on state-of-the-art feature inversion methods
+- Investigating advanced decoder architectures beyond attention-based design
+- Exploring alternative loss functions for perceptual quality optimization
+- Benchmarking our approach against published reconstruction methods
+- Goal: Identify optimal techniques for neural network feature reconstruction
+
+Next Steps
+1. Complete Run 2 training and test set evaluation
+2. Generate 3-way comparison visualizations (Baseline vs Run 1 vs Run 2)
+3. Analyze PSNR/SSIM/LPIPS trade-offs across all three approaches
+4. Update README with Run 2 results and cross-method analysis
+5. Based on literature findings, determine if additional experiments warranted
+
+Week 2 Extended Summary
+New code (Run 2): 3 Python files, ~800 lines
+Experiments: Run 1 complete, Run 2 in progress
+Research: Literature review ongoing for optimal reconstruction methods
+Results pending: Adversarial training approach (Run 2)
