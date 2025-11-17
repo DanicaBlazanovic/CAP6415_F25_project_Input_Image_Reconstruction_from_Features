@@ -501,9 +501,9 @@ def main():
     print(f"Scheduler: ReduceLROnPlateau (factor=0.5, patience=5)")
     
     # Create results directories
-    checkpoint_dir = Path('results') / architecture / 'checkpoints_adversarial_fixed'
-    metrics_dir = Path('results') / architecture / 'metrics_adversarial_fixed'
-    figures_dir = Path('results') / architecture / 'figures_adversarial_fixed'
+    checkpoint_dir = Path('results') / architecture / 'checkpoints_adversarial'
+    metrics_dir = Path('results') / architecture / 'metrics_adversarial'
+    figures_dir = Path('results') / architecture / 'figures_adversarial'
     
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     metrics_dir.mkdir(parents=True, exist_ok=True)
@@ -577,7 +577,7 @@ def main():
         'device': str(device)
     }
     
-    model_info_path = Path('results') / architecture / f'model_info_{architecture}_{layer_name}_adversarial_fixed.txt'
+    model_info_path = Path('results') / architecture / f'model_info_{architecture}_{layer_name}_adversarial.txt'
     save_model_info(config, model_info_path)
     
     # Create trainer with fixed hyperparameters
@@ -614,7 +614,7 @@ def main():
     total_time = (time.time() - start_time) / 60
     
     # Plot training curves
-    curves_path = figures_dir / f'{architecture}_{layer_name}_adversarial_fixed_training_curves.png'
+    curves_path = figures_dir / f'{architecture}_{layer_name}_adversarial_training_curves.png'
     plot_training_curves(history, curves_path)
     
     # Print final summary

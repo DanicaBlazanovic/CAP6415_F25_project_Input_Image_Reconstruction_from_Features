@@ -136,14 +136,12 @@ class AdversarialTrainer:
             mode='min',
             factor=0.5,
             patience=5,
-            verbose=True
         )
         self.scheduler_D = optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer_D, 
             mode='min', 
             factor=0.5, 
             patience=5,
-            verbose=True
         )
         
         # Training history
