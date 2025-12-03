@@ -46,7 +46,7 @@ The following table presents the best-performing model configurations ranked by 
 |:----:|---------------------|:---------:|:----:|:--------:|:----:|
 | 1 | **Ensemble All Weighted + Transposed Conv** | **17.64** | 0.586 | 0.478 | Ensemble |
 | 2 | **Ensemble All Concat + Transposed Conv** | **17.50** | 0.584 | 0.473 | Ensemble |
-| 3 | **VGG-16 Block1 + Transposed Conv** ⭐ | **17.35** | 0.560 | 0.502 | **Single** |
+| 3 | **VGG-16 Block1 + Transposed Conv** | **17.35** | 0.560 | 0.502 | **Single** |
 | 4 | Ensemble All Attention + Transposed Conv | 17.30 | 0.570 | 0.478 | Ensemble |
 | 5 | Ensemble All Concat + Frequency-Aware | 17.27 | 0.562 | 0.474 | Ensemble |
 | 6 | Ensemble All Weighted + Frequency-Aware | 17.25 | 0.573 | 0.477 | Ensemble |
@@ -55,7 +55,7 @@ The following table presents the best-performing model configurations ranked by 
 | 9 | Ensemble All Concat + Wavelet | 17.21 | **0.591** | 0.479 | Ensemble |
 | 10 | Ensemble All Weighted + Wavelet | 17.14 | 0.576 | 0.481 | Ensemble |
 
-### 📊 Key Observations
+### Key Observations
 
 -  **Best Overall**: Ensemble weighted fusion with transposed convolution decoder (**17.64 dB PSNR**)
 -  **Best Single Model**: VGG-16 Block1 + Transposed Conv (**17.35 dB**) — only **0.29 dB behind best ensemble**
