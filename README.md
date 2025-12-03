@@ -54,25 +54,23 @@ The following table presents the best-performing model configurations ranked by 
 -  **Ensemble vs. Single**: Minimal **+1.7% PSNR improvement** from ensembling despite **4× computational cost**
 -  **SSIM Leader**: Ensemble concat + wavelet achieves highest SSIM (**0.591**) despite ranking 9th in PSNR
 
-
-
-
-
-
-
-
-
+---
 
 ## Hardware and Training Configuration
 
 **Computing Environment:**
-- **GPU:** NVIDIA A100 (40GB) via Google Colab Pro for VGG16 block1; standard Colab GPU (16GB) for all other experiments
-- **CPU:** Mac M1 for local development and testing
+- **GPU:** NVIDIA RTX 6000 Ada Generation (48GB VRAM)
+- **Driver Version:** 550.107.02
+- **CUDA Version:** 12.4
+- **CPU:** [To be specified based on your system]
 - **Precision:** FP32 (no mixed precision)
 - **Framework:** PyTorch 2.0+ with cuDNN backend
-- **Batch size:** 8 (standard layers), 1 (VGG16 block1 due to memory constraints)
+- **Batch size:** 8 (standard layers), 1 (VGG16 block1 due to memory constraints for initial baselines)
+
+**Note on hardware upgrade:** Main experiments were conducted on NVIDIA RTX 6000 Ada Generation with 48GB VRAM, providing significantly more memory headroom compared to baseline experiments that required Google Colab Pro A100 (40GB) for VGG16 block1. This hardware upgrade enabled larger batch sizes and more complex ensemble architectures.
 
 **Note on timing comparisons:** Reported training times are machine-specific and depend on hardware, precision settings, dataloader configuration, and cuDNN optimization. These should be interpreted as relative comparisons within this study rather than absolute performance benchmarks. Times may vary significantly on different hardware configurations.
+
 
 ---
 
@@ -215,6 +213,7 @@ CV_Final_Project/
 │
 ├── requirements.txt              # Python dependencies
 ├── .gitignore                 # Git ignore patterns
+
 └── README.md                    # This file
 ```
 
