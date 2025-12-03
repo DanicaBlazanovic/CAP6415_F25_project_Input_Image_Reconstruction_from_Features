@@ -56,18 +56,54 @@ The following table presents the best-performing model configurations ranked by 
 
 ---
 
+
+
+## Dataset
+
+**DIV2K Dataset** [9]
+- 800 high-resolution training images (~2K resolution, varying dimensions)
+- Diverse natural scenes (landscapes, urban, portraits, objects)
+- Resized to 224×224 for computational efficiency
+- Official split: 800 train (DIV2K_train_HR), 100 validation (DIV2K_valid_HR)
+- Link to download the dataset: https://www.kaggle.com/datasets/soumikrakshit/div2k-high-resolution-images
+
+**Data Usage in This Study:**
+
+We split the 800 DIV2K training images into proper training and validation sets, and use the official DIV2K validation set (DIV2K_valid_HR) as our test set with publicly available ground truth:
+
+- **Training:** 640 images (80% of DIV2K_train_HR) - used for model parameter updates
+- **Validation:** 160 images (20% of DIV2K_train_HR) - used for learning rate scheduling and checkpoint selection
+- **Test:** 100 images (DIV2K_valid_HR) - held-out set for final evaluation and reporting metrics
+
+**Split Strategy:**
+
+- Random seed 42 ensures reproducibility (set via `set_seed(42)` using NumPy)
+- No overlap between training, validation, and test sets
+- All three architectures (ResNet34, VGG16, ViT) use identical splits for fair comparison
+- Validation set monitors training progress and prevents overfitting
+- Test set provides unbiased evaluation of final model performance
+
+This standard 640/160/100 (train/val/test) split ensures our reconstruction quality metrics reflect true generalization performance while maintaining fair cross-architecture comparisons.
+
+**Preprocessing:**
+1. Resize to 256×256 (bicubic interpolation, PyTorch default)
+2. **Training:** Random crop to 224×224 + random horizontal flip (p=0.5)
+3. **Validation/Test:** Center crop to 224×224 (deterministic)
+4. Normalize with ImageNet statistics: $\mu=[0.485, 0.456, 0.406]$, $\sigma=[0.229, 0.224, 0.225]$
+5. Denormalize before computing metrics (reverse normalization and clamp to [0,1])
+
+---
+
+
 ## Hardware and Training Configuration
 
 **Computing Environment:**
 - **GPU:** NVIDIA RTX 6000 Ada Generation (48GB VRAM)
 - **Driver Version:** 550.107.02
 - **CUDA Version:** 12.4
-- **CPU:** [To be specified based on your system]
-- **Precision:** FP32 (no mixed precision)
+- **Precision:** FP32 
 - **Framework:** PyTorch 2.0+ with cuDNN backend
-- **Batch size:** 8 (standard layers), 1 (VGG16 block1 due to memory constraints for initial baselines)
-
-**Note on hardware upgrade:** Main experiments were conducted on NVIDIA RTX 6000 Ada Generation with 48GB VRAM, providing significantly more memory headroom compared to baseline experiments that required Google Colab Pro A100 (40GB) for VGG16 block1. This hardware upgrade enabled larger batch sizes and more complex ensemble architectures.
+- **Batch size:** 8 
 
 **Note on timing comparisons:** Reported training times are machine-specific and depend on hardware, precision settings, dataloader configuration, and cuDNN optimization. These should be interpreted as relative comparisons within this study rather than absolute performance benchmarks. Times may vary significantly on different hardware configurations.
 
