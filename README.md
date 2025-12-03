@@ -55,6 +55,19 @@ The following table presents the best-performing model configurations ranked by 
 -  **SSIM Leader**: Ensemble concat + wavelet achieves highest SSIM (**0.591**) despite ranking 9th in PSNR
 
 ---
+## Visual Results
+
+Our best model (VGG-16 Block1 + Transposed Convolution Decoder) achieves high-quality reconstructions across diverse image content:
+
+![Reconstruction Examples](results/combined.png)
+
+*Figure: Reconstruction examples from DIV2K validation set. Each row shows three views: Original image (left), Reconstructed image with metrics (center), and Difference map (right). The model successfully preserves fine details, textures, and color fidelity across various scenes including wildlife, landscapes, and complex patterns.*
+
+**Key observations:**
+- Sharp detail preservation in high-frequency regions (animal fur, foliage)
+- Accurate color reproduction across diverse lighting conditions
+- Minimal reconstruction artifacts in complex textures
+- PSNR values consistently above 17 dB across test samples
 
 
 
@@ -112,13 +125,21 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 
 ## Installation
 
+
 ### Prerequisites
 
 - Python 3.10+
-- CUDA-capable GPU (recommended) or Apple Silicon (MPS)
-- 16GB+ RAM for most experiments
-- 40GB+ GPU RAM for VGG16 block1 (use Google Colab Pro with A100)
+- CUDA-capable GPU (recommended: 24GB+ VRAM)
+  - Standard experiments: 16GB+ GPU RAM sufficient
+  - VGG16 block1 experiments: 40GB+ GPU RAM required
+  - Ensemble experiments: 40GB+ GPU RAM recommended
+- 16GB+ system RAM
 - ~5GB disk space for dataset and models
+
+**Hardware used in this study:**
+- GPU: NVIDIA RTX 6000 Ada Generation (48GB VRAM)
+- CUDA: 12.4
+- Driver: 550.107.02
 
 ### Setup
 ```bash
@@ -160,20 +181,23 @@ seaborn>=0.12.0
 
 ### 1. Run Complete Experiment Suite
 ```bash
-# ResNet34 - all layers (recommended: standard GPU)
-python scripts/run_experiments.py --architecture resnet34 --epochs 30 --limit none --no-confirm
+# Train single experiment
+python train.py --arch vgg16 --layer block1 --decoder tansposed_conv
 
-# VGG16 - blocks 2-5 (standard GPU)
-python scripts/run_experiments.py --architecture vgg16 --layers block2 block3 block4 block5 --epochs 30 --limit none --no-confirm
+# Train ensemble
+python train.py --arch ensemble --fusion attention --decoder tansposed_conv
 
-# VGG16 block1 - requires 40GB GPU (use Google Colab Pro)
-python scripts/run_experiments.py --architecture vgg16 --layers block1 --epochs 30 --limit none --batch-size 1 --no-confirm
+# Train all experiments
+python train.py --mode all
 
-# ViT - selected blocks
-python scripts/run_experiments.py --architecture vit_base_patch16_224 --layers block0 block1 block5 block8 block11 --epochs 30 --limit none --no-confirm
+# Evaluate single experiment
+python evaluate.py --arch vgg16 --layer block1 --decoder tansposed_conv
 
-# Quick test (100 images, 5 epochs)
-python scripts/run_experiments.py --architecture resnet34 --epochs 5 --limit 100
+# Evaluate ensemble
+python evaluate.py --arch ensemble --fusion attention --decoder tansposed_conv
+
+# Evaluate all experiments
+python evaluate.py --mode all
 ```
 
 **Key Arguments:**
@@ -185,28 +209,6 @@ python scripts/run_experiments.py --architecture resnet34 --epochs 5 --limit 100
 - `--decoder`: Decoder type (`simple` or `attention`, default: `attention`)
 - `--no-confirm`: Skip confirmation prompt
 
-### 2. Generate Visualizations
-```bash
-# Generate reconstruction visualizations
-python scripts/generate_reconstructions.py --architecture resnet34
-
-# Generate all analysis plots
-python scripts/visualize_results.py --architecture resnet34
-
-# For all architectures
-for arch in resnet34 vgg16 vit_base_patch16_224; do
-    python scripts/generate_reconstructions.py --architecture $arch
-    python scripts/visualize_results.py --architecture $arch
-done
-```
-
-### 3. Analyze Results (Interactive)
-```bash
-# Launch Jupyter Lab
-jupyter lab
-
-# Open notebooks/analyze_results.ipynb
-```
 
 ---
 
@@ -230,23 +232,9 @@ CV_Final_Project/
 │
 │
 ├── results/
-│   ├── resnet34/
-│   │   ├── checkpoints/          # Trained model weights (.pth files)
-│   │   ├── figures/              # Reconstruction comparison images
-│   │   ├── metrics/              # CSV files with numerical results
-│   │   └── all_experiments_summary.csv  # Combined results
-│   │
-│   ├── vgg16/
-│   │   ├── checkpoints/          # Baseline MSE-trained models
-│   │   ├── figures/              # Standard reconstruction visualizations
-│   │   ├── figures_perceptual/   # Perceptual loss experiment visualizations
-│   │   ├── figures_adversarial/  # GAN-based experiment visualizations
-│   │   ├── metrics/              # CSV files with numerical results
-│   │   └── ...                   # Same structure for VGG16
-│   │
-│   └── vit_base_patch16_224/
-│       └── ...                   # Same structure for ViTor ViT
-│
+│   ├── coming soon............
+│  
+│  
 ├── requirements.txt              # Python dependencies
 ├── .gitignore                 # Git ignore patterns
 
