@@ -200,16 +200,6 @@ python evaluate.py --arch ensemble --fusion attention --decoder tansposed_conv
 python evaluate.py --mode all
 ```
 
-**Key Arguments:**
-- `--architecture`: Choose from `resnet34`, `vgg16`, `vit_base_patch16_224`
-- `--layers`: Specify layers (default: all layers for that architecture)
-- `--epochs`: Number of training epochs (default: 20)
-- `--limit`: Number of images to use (`none` for full dataset)
-- `--batch-size`: Batch size (default: 8, use 1 for VGG16 block1)
-- `--decoder`: Decoder type (`simple` or `attention`, default: `attention`)
-- `--no-confirm`: Skip confirmation prompt
-
-
 ---
 
 ## Project Structure
