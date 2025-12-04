@@ -61,7 +61,13 @@ The following table presents the best-performing model configurations ranked by 
 
 Our best model (VGG-16 Block1 + Transposed Convolution Decoder) achieves high-quality reconstructions across diverse image content:
 
+![Reconstruction Examples](results/comparison_0000.png)
 ![Reconstruction Examples](results/1.png)
+![Reconstruction Examples](results/1.png)
+![Reconstruction Examples](results/1.png)
+![Reconstruction Examples](results/1.png)
+![Reconstruction Examples](results/1.png)
+
 
 *Figure: Reconstruction examples from DIV2K validation set. Each row shows three views: Original image (left), Reconstructed image with metrics (center), and Difference map (right). The model successfully preserves fine details, textures, and color fidelity across various scenes including wildlife, landscapes, and complex patterns.*
 
