@@ -1,21 +1,45 @@
-# Core dependencies
-torch>=2.0.0
-torchvision>=0.15.0
-timm>=0.9.0
-pillow>=9.0.0
 
-# Data processing
-numpy>=1.23.0
-pandas>=1.5.0
+# Deep Learning Framework
+torch>=2.4.0
+torchvision>=0.19.0
+torchaudio>=2.4.0
 
-# Visualization
-matplotlib>=3.5.0
-seaborn>=0.12.0
+# Pre-trained Model Library
+timm>=1.0.9
 
-# Metrics
-scikit-image>=0.19.0
-scikit-learn>=1.0.0
+# Perceptual Loss
 lpips>=0.1.4
 
+# Image Processing
+opencv-python>=4.10.0
+scikit-image>=0.24.0
+Pillow>=10.2.0
+imageio>=2.35.1
+
+# Data Processing & Analysis
+numpy>=1.26.3
+pandas>=2.2.2
+scipy>=1.14.1
+
+# Visualization
+matplotlib>=3.9.2
+seaborn>=0.13.2
+
+# Machine Learning Utils
+scikit-learn>=1.5.1
+
+# Progress & Logging
+tqdm>=4.66.5
+tensorboard>=2.17.1
+
+# Configuration Management
+PyYAML>=6.0.2
+
+# Jupyter Support (Optional)
+jupyter>=1.1.1
+ipython>=8.28.0
+notebook>=7.2.2
+
 # Utilities
-tqdm>=4.65.0
+einops>=0.8.0
+

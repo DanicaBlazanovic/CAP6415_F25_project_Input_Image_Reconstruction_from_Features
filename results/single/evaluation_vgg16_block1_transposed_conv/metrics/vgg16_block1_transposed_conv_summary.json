@@ -1,0 +1,13 @@
+{
+  "experiment": "vgg16_block1_transposed_conv",
+  "model_type": "single",
+  "num_images": 100,
+  "psnr_mean": 10.27186415795086,
+  "psnr_std": 1.4608328885669088,
+  "psnr_min": 7.022856301762123,
+  "psnr_max": 15.614470256056041,
+  "ssim_mean": 0.2464682012796402,
+  "ssim_std": 0.09484215825796127,
+  "ssim_min": 0.008648996241390705,
+  "ssim_max": 0.48034968972206116
+}
