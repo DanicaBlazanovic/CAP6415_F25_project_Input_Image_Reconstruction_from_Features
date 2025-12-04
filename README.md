@@ -30,6 +30,11 @@ Our findings demonstrate that architectural simplicity combined with high-resolu
  -->
 ---
 
+This document presents our main experimental setup and results; for baseline comparisons and additional methodology details, see [METHODOLOGY_BASELINES.md](METHODOLOGY_BASELINES.md).
+
+
+---
+
 ## Top 10 Models by PSNR Performance
 
 The following table presents the best-performing model configurations ranked by Peak Signal-to-Noise Ratio (PSNR) on the DIV2K test set. Notably, **9 out of 10 top models utilize the Transposed Convolution or Wavelet decoder**, with ensemble architectures dominating the leaderboard. The best single-architecture model (**VGG-16 Block1 + Transposed Conv**) ranks 3rd overall, achieving competitive performance at a fraction of the computational cost. **VGG-16's high spatial resolution features (112×112) combined with the simple transposed convolution decoder proves remarkably effective**, outperforming all other single architectures and nearly matching ensemble performance. Ensemble models show consistent but marginal improvements (+0.3 dB PSNR) over the best single model, highlighting the trade-off between architectural complexity and reconstruction quality.
