@@ -159,6 +159,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 
 ### Setup
 
+```bash
 # Clone repository
 git clone https://github.com/DanicaBlazanovic/CAP6415_F25_project_Input_Image_Reconstruction_from_Features.git
 cd CAP6415_F25_project_Input_Image_Reconstruction_from_Features
@@ -172,7 +173,7 @@ pip install -r requirements.txt
 
 # Download DIV2K dataset
 python scripts/download_dataset.py
-
+```
 
 
 ### Dependencies
