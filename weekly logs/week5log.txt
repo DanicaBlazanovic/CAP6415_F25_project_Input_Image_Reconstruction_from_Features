@@ -1,0 +1,92 @@
+================================================================================
+WEEK 5 LOG - CAP6415 Computer Vision Final Project
+Input Image Reconstruction from CNN Features
+Team: Danica Blazanovic, Abbas Khan
+Date: December 2-4, 2025
+================================================================================
+
+PROJECT STATUS: Code Complete, Documentation Complete, Testing Complete,
+                Video Preparation Complete, Ready for Submission
+
+================================================================================
+ACCOMPLISHMENTS
+================================================================================
+
+1. COMPREHENSIVE CODE DOCUMENTATION
+   - Documented 5 core modules (~4,600 lines added)
+   - Files: models.py, dataset.py, evaluation.py, training.py, utils.py
+   - Added file-level docstrings, function docstrings (Args/Returns/Examples)
+   - Inline comments explaining WHY not just WHAT
+   - Cross-platform compatibility notes throughout
+   - Performance characteristics and memory requirements documented
+
+2. CODE RESTRUCTURING
+   - Renamed train_perceptual.py → training.py (professional naming)
+   - Updated all imports in scripts/train.py and scripts/evaluate.py
+   - Removed "_improved" suffix from all files (production-ready)
+   - Clean, professional file organization achieved
+
+3. CROSS-PLATFORM TESTING (Mac with Apple Silicon MPS)
+   - All imports tested and working
+   - Training pipeline validated (VGG16 block1)
+   - Evaluation pipeline validated (checkpoint loading, metrics, visualizations)
+   - Device detection working (CUDA/MPS/CPU)
+   - No platform-specific errors
+
+4. README.md REVISION
+   - Condensed by ~50% (3,500 → 1,800 lines)
+   - Maintained all essential content (images, tables, formulas, results)
+   - Improved readability and navigation
+   - Professional presentation quality
+
+5. VIDEO PRESENTATION PREPARATION
+   - Working on it
+
+
+================================================================================
+DELIVERABLES CREATED
+================================================================================
+
+1. models.py (production, documented)
+2. dataset.py (production, documented)
+3. evaluation.py (production, documented)
+4. training.py (production, documented, renamed)
+5. utils.py (production, documented)
+6. README_revised.md (concise, professional)
+7. video_presentation_script.md (10-11 min narration)
+8. week5log.txt (this file)
+
+
+
+================================================================================
+KEY METRICS
+================================================================================
+
+Code Quality:
+- 7 core modules + 2 scripts fully documented
+- ~4,600 lines of professional documentation added
+- Cross-platform compatible (Mac MPS, Linux CUDA)
+- Clean import structure, no circular dependencies
+
+Test Results:
+- Training time (1 epoch, VGG block1): ~10 minutes on MPS
+- Evaluation time (100 images): ~24 seconds
+- All pipelines working correctly
+
+Best Experimental Results:
+- Single architecture: VGG16 block1 (14.45 dB PSNR, 0.530 SSIM)
+- Multi-architecture ensemble: 17.57 dB PSNR, 0.586 SSIM
+- Improvement: +3.12 dB (+21.6%) over best single architecture
+
+================================================================================
+REMAINING TASKS
+================================================================================
+
+- Record 10-11 minute video presentation
+- Final project submission
+- Code and documentation review
+
+================================================================================
+
+Status: All Week 5 objectives completed successfully
+Last Updated: December 4, 2025
