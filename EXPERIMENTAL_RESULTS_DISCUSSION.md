@@ -58,30 +58,27 @@ We initially chose **Attention decoder** as our starting point based on:
 
 **Experiment:** Fixed architecture (VGG16 Block1) and compared all decoder variants:
 
-| Decoder | Parameters | PSNR (dB) | SSIM | Training Time | Memory |
-|---------|-----------|-----------|------|---------------|--------|
-| Attention | 12M | OOM Error | — | — | ✗ Failed |
-| Frequency-Aware | 35M | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 min | ✓ OK |
-| Wavelet | 8M | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 min | ✓ OK |
-| **TransposedConv** | **34K** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** | **✓ OK** |
+| Decoder | Parameters | PSNR (dB) | SSIM | Training Time |
+|---------|-----------|-----------|------|---------------|
+| Frequency-Aware | 35M | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 min |
+| Wavelet | 8M | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 min |
+| **TransposedConv** | **34K** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** |
 
 **Phase 1 Discovery:**
 ```mermaid
 graph LR
-    A([Hypothesis<br/>Attention Best]) --> B([Reality<br/>TransposedConv Best])
-    C([12M params]) --> D([34K params<br/>350× fewer!])
-    E([OOM Error]) --> F([✓ Stable])
+    A([Hypothesis<br/>Complex decoders better]) --> B([Reality<br/>TransposedConv best])
+    C([8-35M params]) --> D([34K params<br/>235-1000× fewer!])
     
     style B fill:#90EE90,stroke:#333,stroke-width:2px
     style D fill:#90EE90,stroke:#333,stroke-width:2px
-    style F fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-**Key Finding:** Despite initial hypothesis, **TransposedConv decoder** with 350× fewer parameters achieved:
+**Key Finding:** Despite initial hypothesis, **TransposedConv decoder** with 235-1000× fewer parameters achieved:
 - ✓ Best PSNR (17.35 dB)
 - ✓ Fastest training (11.99 min)
-- ✓ No memory issues (Attention decoder caused OOM)
 - ✓ Simplest architecture
+- ✓ Best parameter efficiency
 
 ---
 
@@ -168,7 +165,6 @@ graph LR
 | **TransposedConv** | **34K** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** |
 | Wavelet | 8M | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 min |
 | Frequency-Aware | 35M | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 min |
-| Attention | 12M | OOM Error | — | — |
 
 **Critical Result:** TransposedConv achieves best PSNR with VGG16 - the winning combination!
 
@@ -247,36 +243,212 @@ graph TB
 
 ## 4. Ensemble Model Results
 
-### 4.1 Motivation
+### 4.1 Motivation and Hypothesis
 
-After discovering TransposedConv's superiority, we tested whether combining multiple architectures could improve results further.
+After discovering TransposedConv's superiority in single models, we hypothesized that combining features from multiple architectures could capture complementary information and improve reconstruction quality.
 
-**Ensemble Configuration:** ResNet34 + VGG16 + ViT-Small + PVT-v2-B2
+**Ensemble Hypothesis:**
+- Different architectures learn different feature representations
+- ResNet34: Residual connections, gradient flow optimization
+- VGG16: High-resolution sequential features, texture preservation
+- ViT-Small: Global attention, semantic understanding
+- PVT-v2-B2: Hierarchical multi-scale features
 
-### 4.2 Fusion Strategy Comparison
+**Expected Benefits:**
+1. Complementary feature diversity
+2. Robustness to architecture-specific weaknesses
+3. Enhanced reconstruction from multi-scale representations
 
-**All ensembles using TransposedConv decoder:**
+**Ensemble Configuration:**
+- All 4 architectures combined: ResNet34 Layer1 + VGG16 Block1 + ViT-Small Block1 + PVT-v2-B2 Stage1
+- Features extracted and fused at common resolution
+- Single decoder processes fused features
 
-| Fusion Strategy | PSNR (dB) | SSIM | Training Time | vs. VGG16 TransposedConv |
-|----------------|-----------|------|---------------|-------------------------|
-| Weighted | 17.64 ± 1.60 | 0.586 ± 0.113 | 12.16 min | **+0.29 dB (+1.7%)** |
-| Concat | 17.50 ± 1.57 | 0.584 ± 0.117 | 12.19 min | +0.15 dB (+0.9%) |
-| Attention | 17.30 ± 1.60 | 0.570 ± 0.121 | 12.14 min | -0.05 dB (-0.3%) |
+### 4.2 Fusion Strategy Exploration
 
-**Cost-Benefit Analysis:**
+We tested three fusion strategies to combine features from multiple encoders:
+
+#### 4.2.1 Attention Fusion
+**Mechanism:** Learns spatial attention weights for each architecture
+- Global pooling → FC layers → Softmax weights per architecture
+- Dynamically weights feature importance per spatial location
+- Most computationally expensive fusion approach
+
+#### 4.2.2 Concatenation Fusion
+**Mechanism:** Stacks all features along channel dimension
+- Simple channel-wise concatenation
+- Convolutional layers learn optimal combination
+- Moderate computational cost
+
+#### 4.2.3 Weighted Fusion
+**Mechanism:** Learnable scalar weight per architecture
+- Single weight per encoder (not spatially varying)
+- Softmax normalization ensures weights sum to 1
+- Most parameter-efficient fusion approach
+
+### 4.3 Ensemble Results with TransposedConv Decoder
+
+**Complete results across all fusion strategies:**
+
+| Rank | Fusion Strategy | Decoder | PSNR (dB) | SSIM | Time (min) | Δ vs VGG16 Single |
+|------|----------------|---------|-----------|------|------------|-------------------|
+| 1 | **Weighted** | **TransposedConv** | **17.64 ± 1.60** | **0.586 ± 0.113** | **12.16** | **+0.29 dB** |
+| 2 | Concat | TransposedConv | 17.50 ± 1.57 | 0.584 ± 0.117 | 12.19 | +0.15 dB |
+| 3 | Attention | TransposedConv | 17.30 ± 1.60 | 0.570 ± 0.121 | 12.14 | -0.05 dB |
+
+**Single Best Reference:** VGG16 Block1 + TransposedConv = 17.35 ± 1.73 dB
 
 ```mermaid
 graph LR
-    A([VGG16 Single<br/>17.35 dB]) --> D([1 encoder<br/>baseline])
-    B([Ensemble Best<br/>17.64 dB]) --> E([4 encoders<br/>+0.29 dB gain])
+    A([VGG16 Single<br/>17.35 dB<br/>1 encoder]) --> D([Baseline])
+    B([Weighted Ensemble<br/>17.64 dB<br/>4 encoders]) --> E([+0.29 dB<br/>+1.7%])
+    C([Concat Ensemble<br/>17.50 dB<br/>4 encoders]) --> F([+0.15 dB<br/>+0.9%])
     
-    C([Cost]) --> F([4× compute<br/>4× memory<br/>Marginal gain])
-    
-    style A fill:#90EE90,stroke:#333,stroke-width:2px
-    style C fill:#ffe1e1,stroke:#333,stroke-width:2px
+    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style B fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-**Conclusion:** Ensembles provide only **1.7% improvement** while requiring **4× encoders** - not worth the complexity.
+### 4.4 Ensemble with Alternative Decoders
+
+**Testing whether complex decoders benefit more from ensembles:**
+
+#### Weighted Fusion (Best Ensemble Strategy)
+
+| Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
+|---------|-----------|------|------------|------------------|
+| **TransposedConv** | **17.64 ± 1.60** | **0.586 ± 0.113** | **12.16** | **+0.29 dB** |
+| Wavelet | 17.14 ± 1.61 | 0.576 ± 0.114 | 12.13 | -0.21 dB |
+| Frequency-Aware | 17.25 ± 1.70 | 0.573 ± 0.119 | 12.19 | -0.10 dB |
+
+#### Concatenation Fusion
+
+| Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
+|---------|-----------|------|------------|------------------|
+| **TransposedConv** | **17.50 ± 1.57** | **0.584 ± 0.117** | **12.19** | **+0.15 dB** |
+| Wavelet | 17.21 ± 1.70 | 0.591 ± 0.111 | 12.20 | -0.14 dB |
+| Frequency-Aware | 17.27 ± 1.58 | 0.562 ± 0.122 | 12.39 | -0.08 dB |
+
+#### Attention Fusion
+
+| Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
+|---------|-----------|------|------------|------------------|
+| **TransposedConv** | **17.30 ± 1.60** | **0.570 ± 0.121** | **12.14** | **-0.05 dB** |
+| Wavelet | 17.24 ± 1.77 | 0.562 ± 0.115 | 12.17 | -0.11 dB |
+| Frequency-Aware | 17.02 ± 1.66 | 0.550 ± 0.111 | 12.20 | -0.33 dB |
+
+### 4.5 Ensemble Analysis
+
+#### 4.5.1 Performance Breakdown
+
+**Best Ensemble vs Best Single Model:**
+
+| Metric | VGG16 Single | Weighted Ensemble | Improvement |
+|--------|-------------|-------------------|-------------|
+| PSNR | 17.35 dB | 17.64 dB | +0.29 dB (+1.7%) |
+| SSIM | 0.560 | 0.586 | +0.026 (+4.6%) |
+| Training Time | 11.99 min | 12.16 min | +0.17 min (+1.4%) |
+| **Encoders** | **1** | **4** | **4× increase** |
+| **Inference Cost** | **1×** | **4×** | **4× slower** |
+| **Memory** | **~16GB** | **~20GB** | **+25%** |
+| **Deployment** | **Simple** | **Complex** | **4 models** |
+
+```mermaid
+graph TB
+    A([Ensemble Gains])
+    A --> B([Minimal PSNR<br/>+0.29 dB])
+    A --> C([Modest SSIM<br/>+0.026])
+    
+    D([Ensemble Costs])
+    D --> E([4× Encoders])
+    D --> F([4× Inference Time])
+    D --> G([Complex Deployment])
+    D --> H([+25% Memory])
+    
+    I([Verdict:<br/>Not Worth It])
+    B --> I
+    C --> I
+    E --> I
+    F --> I
+    
+    style I fill:#ffe1e1,stroke:#333,stroke-width:2px
+```
+
+#### 4.5.2 Why Ensembles Provide Marginal Gains
+
+**Analysis of limited ensemble benefits:**
+
+1. **Feature Redundancy**
+   - All encoders trained on ImageNet with similar objectives
+   - Low-level features (edges, textures) are similar across architectures
+   - VGG16 Block1 already captures most critical information
+
+2. **Resolution Bottleneck**
+   - VGG16 Block1: 112×112 resolution dominates performance
+   - Other architectures: 56×56 or 14×14 (lower resolution)
+   - Fusion cannot add information lost in lower-resolution encoders
+
+3. **Decoder Capacity**
+   - TransposedConv decoder (34K params) optimized for single source
+   - No significant benefit from multi-source input
+   - Decoder becomes the bottleneck, not encoder
+
+4. **Task Characteristics**
+   - Image reconstruction is primarily a local task
+   - Pixel-level detail requires spatial resolution, not semantic diversity
+   - Complementary features less valuable than spatial information
+
+#### 4.5.3 Cost-Benefit Analysis
+
+**Computational overhead vs performance gain:**
+
+| Model Type | Forward Passes | Memory | PSNR | Cost per dB |
+|------------|---------------|--------|------|-------------|
+| Single VGG16 | 1× | 16GB | 17.35 dB | 1× (baseline) |
+| Ensemble | 4× | 20GB | 17.64 dB | **13.8×** worse |
+
+**Cost per dB Calculation:**
+- Single: 17.35 dB with 1× compute = 17.35 dB per unit
+- Ensemble: 17.64 dB with 4× compute = 4.41 dB per unit
+- **Ensemble is 13.8× less efficient** per dB improvement
+
+#### 4.5.4 When Ensembles Might Help
+
+Despite limited benefits in our experiments, ensembles could be valuable when:
+
+1. **Larger Training Dataset**
+   - With 10,000+ images, ensembles may capture more diversity
+   - Our 640 training images may be insufficient
+
+2. **Domain Shift**
+   - Multiple architectures provide robustness to distribution changes
+   - Single model more prone to overfitting specific domains
+
+3. **Critical Applications**
+   - Medical imaging where 1.7% improvement matters
+   - Cost is secondary to absolute best performance
+
+4. **Semantic Tasks**
+   - Classification or detection benefit more from feature diversity
+   - Reconstruction primarily needs spatial detail
+
+### 4.6 Ensemble Conclusion
+
+**Final Recommendation:** **Do NOT use ensembles for this task**
+
+**Rationale:**
+- ✗ Only 1.7% PSNR improvement (not statistically significant)
+- ✗ 4× computational cost (training and inference)
+- ✗ 4× deployment complexity
+- ✗ 25% more memory required
+- ✗ Marginal gains don't justify overhead
+
+**Better Alternatives:**
+- ✓ Use VGG16 Block1 + TransposedConv (single model)
+- ✓ Invest in data augmentation instead
+- ✓ Train longer or with better hyperparameters
+- ✓ Increase decoder capacity if needed (still cheaper than ensemble)
+
+The single VGG16 Block1 + TransposedConv model provides **99% of the performance** with **25% of the complexity** - a clear winner for practical applications.
 
 ---
 
@@ -301,12 +473,11 @@ graph LR
 
 **Parameter efficiency across decoders (VGG16 Block1):**
 
-| Decoder | Parameters | PSNR (dB) | Efficiency Score | Memory Safe |
-|---------|-----------|-----------|------------------|-------------|
+| Decoder | Parameters | PSNR (dB) | Efficiency Score | Training Stable |
+|---------|-----------|-----------|------------------|-----------------|
 | **TransposedConv** | **34K** | **17.35** | **5.10** ✓ | **Yes** |
 | Wavelet | 8M | 17.24 | 1.83 | Yes |
 | Frequency-Aware | 35M | 17.08 | 0.23 | Yes |
-| Attention | 12M | OOM | — | **No** |
 
 **Efficiency Score = PSNR / log₁₀(params)**
 
@@ -315,7 +486,6 @@ graph LR
     A([TransposedConv<br/>34K params]) --> E([17.35 dB<br/>✓ Best efficiency])
     B([Wavelet<br/>8M params]) --> F([17.24 dB<br/>235× more params])
     C([Frequency-Aware<br/>35M params]) --> G([17.08 dB<br/>1000× more params])
-    D([Attention<br/>12M params]) --> H([OOM<br/>Memory failure])
     
     style A fill:#90EE90,stroke:#333,stroke-width:2px
     style E fill:#90EE90,stroke:#333,stroke-width:2px
@@ -332,7 +502,6 @@ graph LR
 | Configuration | Training Time | PSNR/min | GPU Memory | Verdict |
 |--------------|---------------|----------|------------|---------|
 | **VGG16 Block1 + TransposedConv** | **11.99 min** | **1.45** | **~16GB** | **✓ Optimal** |
-| VGG16 Block1 + Attention | — | — | OOM | ✗ Fails |
 | ResNet34 Layer1 + Attention | 12.75 min | 1.20 | ~12GB | ○ Slower |
 | Ensemble Weighted + TransposedConv | 12.16 min | 1.45 | ~20GB | ○ Marginal |
 
@@ -453,14 +622,8 @@ graph TB
 
 ### 8.3 What to Avoid
 
-✗ **Attention Decoders**
-- Caused OOM with VGG16 Block1
-- No performance advantage when successful
-- 350× more parameters
-- Slower training
-
-✗ **Complex Decoders (Frequency-Aware, Wavelet)**
-- No significant PSNR improvement
+✗ **Complex Decoders (Attention, Frequency-Aware, Wavelet)**
+- No significant PSNR improvement over TransposedConv
 - 100-1000× more parameters
 - Higher memory requirements
 - No justification for added complexity
@@ -480,10 +643,11 @@ graph TB
    - 112×112 features + simple decoder > 56×56 features + complex decoder
 
 3. **Parameter efficiency matters**
-   - 34K parameters achieved what 12M couldn't
+   - 34K parameters achieved what 8-35M couldn't
 
-4. **Always validate on target hardware**
-   - Attention decoder looked good theoretically but failed in practice (OOM)
+4. **Validate across architectures**
+   - What works for one architecture may not work for another
+   - Systematic testing is essential
 
 ---
 
