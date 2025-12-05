@@ -9,17 +9,17 @@ This study investigates image reconstruction from intermediate CNN features. We 
 ## System Architecture
 
 ```mermaid
-graph TD
-    A[Input Image<br/>224×224×3] --> B[Frozen VGG16 Block1<br/>ImageNet Pre-trained]
-    B --> C[Features<br/>64×112×112<br/>12,544 locations]
-    C --> D[Trainable Decoder<br/>Transposed Convolution]
-    D --> E[Reconstructed Image<br/>224×224×3]
-    E --> F[Hybrid Loss<br/>0.5×MSE + 0.5×LPIPS]
-    F --> G[Backpropagation<br/>Decoder Only]
+graph LR
+    A([Input Image<br/>224×224×3]) --> B([Frozen VGG16 Block1<br/>ImageNet Pre-trained])
+    B --> C([Features<br/>64×112×112<br/>12,544 locations])
+    C --> D([Trainable Decoder<br/>Transposed Convolution])
+    D --> E([Reconstructed Image<br/>224×224×3])
+    E --> F([Hybrid Loss<br/>0.5×MSE + 0.5×LPIPS])
+    F --> G([Backpropagation<br/>Decoder Only])
     
-    style B fill:#e1f5ff
-    style D fill:#ffe1e1
-    style E fill:#90EE90
+    style B fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style D fill:#ffe1e1,stroke:#333,stroke-width:2px
+    style E fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 ---
@@ -30,14 +30,14 @@ graph TD
 
 ```mermaid
 graph LR
-    A[Input<br/>3×224×224] --> B[Conv2d<br/>3→64, 3×3]
-    B --> C[ReLU]
-    C --> D[Conv2d<br/>64→64, 3×3]
-    D --> E[ReLU]
-    E --> F[MaxPool2d<br/>2×2, stride=2]
-    F --> G[Output<br/>64×112×112]
+    A([Input<br/>3×224×224]) --> B([Conv2d<br/>3→64, 3×3])
+    B --> C([ReLU])
+    C --> D([Conv2d<br/>64→64, 3×3])
+    D --> E([ReLU])
+    E --> F([MaxPool2d<br/>2×2, stride=2])
+    F --> G([Output<br/>64×112×112])
     
-    style G fill:#90EE90
+    style G fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 **Configuration:**
@@ -53,16 +53,16 @@ graph LR
 ### Transposed Convolution Decoder
 
 ```mermaid
-graph TD
-    A[Features<br/>64×112×112] --> B[ConvTranspose2d<br/>64→32, k=4, s=2, p=1]
-    B --> C[BatchNorm2d]
-    C --> D[ReLU]
-    D --> E[Conv2d<br/>32→3, k=3, p=1]
-    E --> F[Sigmoid]
-    F --> G[Output<br/>3×224×224]
+graph LR
+    A([Features<br/>64×112×112]) --> B([ConvTranspose2d<br/>64→32, k=4, s=2, p=1])
+    B --> C([BatchNorm2d])
+    C --> D([ReLU])
+    D --> E([Conv2d<br/>32→3, k=3, p=1])
+    E --> F([Sigmoid])
+    F --> G([Output<br/>3×224×224])
     
-    style A fill:#e1f5ff
-    style G fill:#90EE90
+    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style G fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 **Specifications:**
@@ -73,19 +73,19 @@ graph TD
 ### Alternative Decoders Tested
 
 ```mermaid
-graph TD
-    A[VGG16 Block1<br/>Features] --> B[TransposedConv<br/>34K params<br/>✓ BEST]
-    A --> C[Attention<br/>12M params]
-    A --> D[Wavelet<br/>8M params]
-    A --> E[FrequencyAware<br/>35M params]
+graph LR
+    A([VGG16 Block1<br/>Features]) --> B([TransposedConv<br/>34K params<br/>✓ BEST])
+    A --> C([Attention<br/>12M params])
+    A --> D([Wavelet<br/>8M params])
+    A --> E([FrequencyAware<br/>35M params])
     
-    B --> F[17.35 dB]
-    C --> G[16.92 dB]
-    D --> H[16.78 dB]
-    E --> I[16.54 dB]
+    B --> F([17.35 dB])
+    C --> G([16.92 dB])
+    D --> H([16.78 dB])
+    E --> I([16.54 dB])
     
-    style B fill:#90EE90
-    style F fill:#90EE90
+    style B fill:#90EE90,stroke:#333,stroke-width:2px
+    style F fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 ---
@@ -115,8 +115,12 @@ $$\mathcal{L}_{\text{total}} = 0.5 \cdot \mathcal{L}_{\text{MSE}} + 0.5 \cdot \m
 
 ```mermaid
 graph LR
-    A[Adam<br/>lr=1e-4] --> B[ReduceLROnPlateau<br/>patience=5]
-    B --> C[Early Stopping<br/>patience=15]
+    A([Adam<br/>lr=1e-4]) --> B([ReduceLROnPlateau<br/>patience=5])
+    B --> C([Early Stopping<br/>patience=15])
+    
+    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style B fill:#fff4e1,stroke:#333,stroke-width:2px
+    style C fill:#ffe1e1,stroke:#333,stroke-width:2px
 ```
 
 **Settings:**
@@ -144,19 +148,19 @@ $$\text{LPIPS} = \sum_{l} w_l \|\phi_l(x) - \phi_l(\hat{x})\|_2^2$$
 ### 5.1 Encoder Layer Ablation (VGG16)
 
 ```mermaid
-graph TD
-    A[VGG16] --> B[Block1<br/>112×112]
-    A --> C[Block2<br/>56×56]
-    A --> D[Block3<br/>28×28]
-    A --> E[Block4<br/>14×14]
+graph LR
+    A([VGG16]) --> B([Block1<br/>112×112])
+    A --> C([Block2<br/>56×56])
+    A --> D([Block3<br/>28×28])
+    A --> E([Block4<br/>14×14])
     
-    B --> F[17.35 dB<br/>✓ BEST]
-    C --> G[16.89 dB]
-    D --> H[15.12 dB]
-    E --> I[13.76 dB]
+    B --> F([17.35 dB<br/>✓ BEST])
+    C --> G([16.89 dB])
+    D --> H([15.12 dB])
+    E --> I([13.76 dB])
     
-    style B fill:#90EE90
-    style F fill:#90EE90
+    style B fill:#90EE90,stroke:#333,stroke-width:2px
+    style F fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 **Results:**
@@ -174,13 +178,13 @@ graph TD
 
 ```mermaid
 graph LR
-    A[VGG16 Block1<br/>112×112] --> E[17.35 dB<br/>✓ BEST]
-    B[ResNet34 Layer1<br/>56×56] --> F[16.82 dB]
-    C[ResNet34 Layer2<br/>28×28] --> G[15.43 dB]
-    D[ViT-Small Block1<br/>14×14] --> H[14.29 dB]
+    A([VGG16 Block1<br/>112×112]) --> E([17.35 dB<br/>✓ BEST])
+    B([ResNet34 Layer1<br/>56×56]) --> F([16.82 dB])
+    C([ResNet34 Layer2<br/>28×28]) --> G([15.43 dB])
+    D([ViT-Small Block1<br/>14×14]) --> H([14.29 dB])
     
-    style A fill:#90EE90
-    style E fill:#90EE90
+    style A fill:#90EE90,stroke:#333,stroke-width:2px
+    style E fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 **Results:**
@@ -215,13 +219,13 @@ All using VGG16 Block1 features:
 
 ```mermaid
 graph LR
-    A[VGG16 Block1<br/>Frozen<br/>5M params] --> B[Features<br/>64×112×112]
-    B --> C[TransposedConv<br/>Trainable<br/>34K params]
-    C --> D[17.35 dB PSNR<br/>0.560 SSIM<br/>0.398 LPIPS]
+    A([VGG16 Block1<br/>Frozen<br/>5M params]) --> B([Features<br/>64×112×112])
+    B --> C([TransposedConv<br/>Trainable<br/>34K params])
+    C --> D([17.35 dB PSNR<br/>0.560 SSIM<br/>0.398 LPIPS])
     
-    style A fill:#e1f5ff
-    style C fill:#ffe1e1
-    style D fill:#90EE90
+    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style C fill:#ffe1e1,stroke:#333,stroke-width:2px
+    style D fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
 **Final Results on Test Set (100 images):**
@@ -251,22 +255,33 @@ graph LR
 ### 6.3 Quality Analysis
 
 ```mermaid
-mindmap
-  root((VGG16 Block1 +<br/>TransposedConv))
-    PSNR: 17.35 dB
-      Best overall
-      26% better than deep layers
-      3% better than complex decoders
-    SSIM: 0.560
-      Good structural preservation
-      Better than all alternatives
-    LPIPS: 0.398
-      Natural appearance
-      Low perceptual distance
-    Efficiency
-      Only 34K parameters
-      70 min training
-      12-15 ms inference
+graph TB
+    Root([VGG16 Block1 +<br/>TransposedConv])
+    
+    Root --> A([PSNR: 17.35 dB])
+    Root --> B([SSIM: 0.560])
+    Root --> C([LPIPS: 0.398])
+    Root --> D([Efficiency])
+    
+    A --> A1([Best overall])
+    A --> A2([26% better than<br/>deep layers])
+    A --> A3([3% better than<br/>complex decoders])
+    
+    B --> B1([Good structural<br/>preservation])
+    B --> B2([Better than all<br/>alternatives])
+    
+    C --> C1([Natural<br/>appearance])
+    C --> C2([Low perceptual<br/>distance])
+    
+    D --> D1([Only 34K<br/>parameters])
+    D --> D2([70 min<br/>training])
+    D --> D3([12-15 ms<br/>inference])
+    
+    style Root fill:#90EE90,stroke:#333,stroke-width:3px
+    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
+    style B fill:#fff4e1,stroke:#333,stroke-width:2px
+    style C fill:#ffe1e1,stroke:#333,stroke-width:2px
+    style D fill:#f0e1ff,stroke:#333,stroke-width:2px
 ```
 
 ---
