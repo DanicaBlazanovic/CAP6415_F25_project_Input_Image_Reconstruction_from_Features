@@ -579,7 +579,7 @@ graph TD
 
 ```mermaid
 graph TB
-    Root([VGG16 Block1 +<br/>TransposedConv<br/>🏆 CHAMPION])
+    Root([VGG16 Block1 +<br/>TransposedConv<br/> CHAMPION])
     
     Root --> A([Spatial Resolution])
     A --> A1([112×112<br/>12,544 locations])
@@ -839,9 +839,9 @@ graph LR
 
 | Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Time (min) |
 |------|--------------|-------|---------|-----------|------|------------|
-| 🥇 1 | **VGG16** | **Block1** | **TransposedConv** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99** |
-| 🥈 2 | VGG16 | Block1 | Wavelet | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 |
-| 🥉 3 | VGG16 | Block1 | Frequency-Aware | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 |
+| 1 | **VGG16** | **Block1** | **TransposedConv** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99** |
+| 2 | VGG16 | Block1 | Wavelet | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 |
+| 3 | VGG16 | Block1 | Frequency-Aware | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 |
 | 4 | PVT-v2-B2 | Stage1 | Attention | 16.40 ± 2.14 | 0.537 ± 0.110 | 13.32 |
 | 5 | PVT-v2-B2 | Stage1 | Wavelet | 16.08 ± 2.00 | 0.534 ± 0.097 | 12.07 |
 | 6 | PVT-v2-B2 | Stage1 | Frequency-Aware | 16.03 ± 1.95 | 0.521 ± 0.104 | 12.08 |
@@ -851,10 +851,10 @@ graph LR
 | 10 | ViT-Small | Block1 | Attention | 15.05 ± 2.04 | 0.440 ± 0.103 | 12.16 |
 
 **Winner: VGG16 Block1 + TransposedConv Decoder**
-- ✓ Highest PSNR (17.35 dB)
-- ✓ Best SSIM (0.560)
-- ✓ Fastest training (11.99 min)
-- ✓ Minimal parameters (34K)
+-  Highest PSNR (17.35 dB)
+-  Best SSIM (0.560)
+-  Fastest training (11.99 min)
+-  Minimal parameters (34K)
 
 ---
 
@@ -1043,10 +1043,10 @@ graph LR
 
 | Comparison | PSNR Δ | Significant? |
 |------------|--------|--------------|
-| VGG16 Block1 vs ResNet34 Layer1 | +2.50 dB | ✓ Yes |
-| VGG16 Block1 vs VGG16 Block3 | +4.71 dB | ✓ Yes |
-| TransposedConv vs Wavelet (VGG16 Block1) | +0.11 dB | ✗ No |
-| Best Ensemble vs VGG16 Block1 | +0.29 dB | ✗ No |
+| VGG16 Block1 vs ResNet34 Layer1 | +2.50 dB |  Yes |
+| VGG16 Block1 vs VGG16 Block3 | +4.71 dB |  Yes |
+| TransposedConv vs Wavelet (VGG16 Block1) | +0.11 dB |  No |
+| Best Ensemble vs VGG16 Block1 | +0.29 dB |  No |
 
 **Conclusion:** VGG16 Block1 is significantly better than other architectures, but decoder choice (TransposedConv vs Complex) is not statistically significant.
 
@@ -1055,8 +1055,8 @@ graph LR
 ## 8. Experimental Summary
 
 **Total Experiments:** 43 configurations
-- ✓ Successful: 40
-- ✗ Failed (OOM): 3
+-  Successful: 40
+-  Failed (OOM): 3
 
 **Key Metrics:**
 - **Best PSNR:** 17.64 dB (Ensemble Weighted + TransposedConv)
