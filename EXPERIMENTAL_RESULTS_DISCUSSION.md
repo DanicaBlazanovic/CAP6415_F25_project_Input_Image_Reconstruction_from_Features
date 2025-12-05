@@ -58,11 +58,11 @@ We initially chose **Attention decoder** as our starting point based on:
 
 **Experiment:** Fixed architecture (VGG16 Block1) and compared all decoder variants:
 
-| Decoder | Parameters | PSNR (dB) | SSIM | Training Time |
-|---------|-----------|-----------|------|---------------|
-| Frequency-Aware | 35M | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 min |
-| Wavelet | 8M | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 min |
-| **TransposedConv** | **34K** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** |
+| Decoder | Parameters | PSNR (dB) | SSIM | Eval Time |
+|---------|-----------|-----------|------|-----------|
+| **TransposedConv** | **34K** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
+| Frequency-Aware | 35M | 17.30 ± 1.76 | 0.576 ± 0.114 | 0.83 min |
+| Wavelet | 8M | 17.29 ± 1.64 | 0.568 ± 0.111 | 0.83 min |
 
 **Phase 1 Discovery:**
 ```mermaid
@@ -75,8 +75,8 @@ graph LR
 ```
 
 **Key Finding:** Despite initial hypothesis, **TransposedConv decoder** with 235-1000× fewer parameters achieved:
-- ✓ Best PSNR (17.35 dB)
-- ✓ Fastest training (11.99 min)
+- ✓ Best PSNR (17.43 dB)
+- ✓ Fastest evaluation (0.85 min)
 - ✓ Simplest architecture
 - ✓ Best parameter efficiency
 
@@ -88,20 +88,20 @@ graph LR
 
 **Experiment:** Test TransposedConv decoder with all architectures at their shallowest layers:
 
-| Architecture | Layer | Resolution | Locations | PSNR (dB) | SSIM | Time |
-|--------------|-------|-----------|-----------|-----------|------|------|
-| **VGG16** | **Block1** | **112×112** | **12,544** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** |
-| ResNet34 | Layer1 | 56×56 | 3,136 | 14.85 ± 2.03 | 0.450 ± 0.111 | 11.94 min |
-| ViT-Small | Block1 | 14×14 | 196 | 14.85 ± 2.00 | 0.412 ± 0.111 | 12.09 min |
-| PVT-v2-B2 | Stage1 | 56×56 | 3,136 | — | — | — |
+| Architecture | Layer | Resolution | Locations | PSNR (dB) | SSIM | Eval Time |
+|--------------|-------|-----------|-----------|-----------|------|-----------|
+| **VGG16** | **Block1** | **112×112** | **12,544** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
+| PVT-v2-B2 | Stage1 | 56×56 | 3,136 | 15.65 ± 1.47 | 0.488 ± 0.104 | 0.88 min |
+| ViT-Small | Block1 | 14×14 | 196 | 15.45 ± 1.96 | 0.458 ± 0.100 | 0.84 min |
+| ResNet34 | Layer1 | 56×56 | 3,136 | 15.04 ± 2.07 | 0.459 ± 0.110 | 0.80 min |
 
 **Comparison with Initial Attention Baseline:**
 
 | Configuration | PSNR (dB) | Improvement vs Attention |
 |---------------|-----------|-------------------------|
-| **VGG16 Block1 + TransposedConv** | **17.35** | **+2.02 dB (+13.2%)** |
-| ResNet34 Layer1 + TransposedConv | 14.85 | -0.48 dB (-3.1%) |
-| ResNet34 Layer1 + Attention (Baseline) | 15.33 | — |
+| **VGG16 Block1 + TransposedConv** | **17.43** | **+12.7%** |
+| ResNet34 Layer1 + TransposedConv | 15.04 | -2.7% |
+| ResNet34 Layer1 + Attention (Baseline) | 15.46 | — |
 
 **Phase 2 Discovery:** VGG16 Block1 + TransposedConv significantly outperforms initial Attention baseline.
 
@@ -117,15 +117,15 @@ graph LR
 
 | Layer | Resolution | Locations | PSNR (dB) | SSIM | Degradation |
 |-------|-----------|-----------|-----------|------|-------------|
-| **Block1** | **112×112** | **12,544** | **17.35 ± 1.73** | **0.560 ± 0.121** | **—** |
-| Block3 | 28×28 | 784 | 12.64 ± 2.14 | 0.340 ± 0.107 | **-27.2%** |
+| **Block1** | **112×112** | **12,544** | **17.43 ± 1.72** | **0.565 ± 0.118** | **—** |
+| Block3 | 28×28 | 784 | 12.60 ± 2.13 | 0.335 ± 0.108 | **-27.7%** |
 
 #### ResNet34 Layer Ablation (TransposedConv Decoder)
 
 | Layer | Resolution | Locations | PSNR (dB) | SSIM | vs. Layer1 |
 |-------|-----------|-----------|-----------|------|------------|
-| **Layer1** | 56×56 | 3,136 | **14.85 ± 2.03** | **0.450 ± 0.111** | — |
-| Layer2 | 28×28 | 784 | 12.86 ± 2.02 | 0.309 ± 0.114 | **-13.4%** |
+| **Layer1** | 56×56 | 3,136 | **15.04 ± 2.07** | **0.459 ± 0.110** | — |
+| Layer2 | 28×28 | 784 | 12.94 ± 2.06 | 0.327 ± 0.110 | **-14.0%** |
 
 ```mermaid
 graph LR
@@ -149,35 +149,35 @@ graph LR
 
 #### ResNet34 Layer1
 
-| Decoder | Params | PSNR (dB) | SSIM | Training Time |
-|---------|--------|-----------|------|---------------|
-| **TransposedConv** | **34K** | **14.85 ± 2.03** | **0.450 ± 0.111** | **11.94 min** |
-| Wavelet | 8M | 15.59 ± 2.01 | 0.490 ± 0.107 | 12.04 min |
-| Frequency-Aware | 35M | 15.54 ± 2.00 | 0.481 ± 0.105 | 11.99 min |
-| Attention | 12M | 15.33 ± 2.02 | 0.465 ± 0.109 | 12.75 min |
+| Decoder | Params | PSNR (dB) | SSIM | Eval Time |
+|---------|--------|-----------|------|-----------|
+| Wavelet | 8M | 15.69 ± 2.09 | 0.501 ± 0.114 | 0.79 min |
+| Attention | 12M | 15.46 ± 2.19 | 0.486 ± 0.101 | 0.81 min |
+| Frequency-Aware | 35M | 15.25 ± 2.05 | 0.470 ± 0.111 | 0.81 min |
+| **TransposedConv** | **34K** | **15.04 ± 2.07** | **0.459 ± 0.110** | **0.80 min** |
 
-**Unexpected Result:** For ResNet34, Wavelet decoder slightly outperforms TransposedConv (+0.74 dB), BUT TransposedConv wins on parameter efficiency (235× fewer params).
+**Observation:** For ResNet34, complex decoders (Wavelet, Attention) slightly outperform TransposedConv (+0.42-0.65 dB), BUT TransposedConv achieves competitive results with 235× fewer parameters.
 
 #### VGG16 Block1
 
-| Decoder | Params | PSNR (dB) | SSIM | Training Time |
-|---------|--------|-----------|------|---------------|
-| **TransposedConv** | **34K** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99 min** |
-| Wavelet | 8M | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 min |
-| Frequency-Aware | 35M | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 min |
+| Decoder | Params | PSNR (dB) | SSIM | Eval Time |
+|---------|--------|-----------|------|-----------|
+| **TransposedConv** | **34K** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
+| Frequency-Aware | 35M | 17.30 ± 1.76 | 0.576 ± 0.114 | 0.83 min |
+| Wavelet | 8M | 17.29 ± 1.64 | 0.568 ± 0.111 | 0.83 min |
 
 **Critical Result:** TransposedConv achieves best PSNR with VGG16 - the winning combination!
 
 #### ViT-Small Block1
 
-| Decoder | Params | PSNR (dB) | SSIM | Training Time |
-|---------|--------|-----------|------|---------------|
-| Attention | 12M | 15.05 ± 2.04 | 0.440 ± 0.103 | 12.16 min |
-| **TransposedConv** | **34K** | **14.85 ± 2.00** | **0.412 ± 0.111** | **12.09 min** |
-| Frequency-Aware | 35M | 14.34 ± 2.17 | 0.410 ± 0.111 | 12.09 min |
-| Wavelet | 8M | 13.14 ± 2.49 | 0.376 ± 0.122 | 12.10 min |
+| Decoder | Params | PSNR (dB) | SSIM | Eval Time |
+|---------|--------|-----------|------|-----------|
+| **TransposedConv** | **34K** | **15.45 ± 1.96** | **0.458 ± 0.100** | **0.84 min** |
+| Attention | 12M | 15.42 ± 1.95 | 0.449 ± 0.109 | 0.84 min |
+| Frequency-Aware | 35M | 14.72 ± 2.14 | 0.433 ± 0.107 | 0.83 min |
+| Wavelet | 8M | 13.29 ± 2.50 | 0.369 ± 0.129 | 0.82 min |
 
-**Observation:** With ViT, Attention decoder performs slightly better (+0.20 dB), but the difference is marginal and TransposedConv remains competitive with 350× fewer parameters.
+**Observation:** With ViT, TransposedConv performs best, demonstrating its robustness across different architecture types while maintaining 350× fewer parameters than Attention.
 
 ---
 
@@ -187,18 +187,18 @@ graph LR
 
 **Complete ranking across all 31 successful experiments:**
 
-| Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Params | Time |
-|------|--------------|-------|---------|-----------|------|--------|------|
-| 🥇 **1** | **VGG16** | **Block1** | **TransposedConv** | **17.35 ± 1.73** | **0.560 ± 0.121** | **34K** | **11.99** |
-| 🥈 2 | VGG16 | Block1 | Wavelet | 17.24 ± 1.76 | 0.572 ± 0.115 | 8M | 12.08 |
-| 🥉 3 | VGG16 | Block1 | Frequency-Aware | 17.08 ± 1.73 | 0.563 ± 0.118 | 35M | 12.08 |
-| 4 | PVT-v2-B2 | Stage1 | Attention | 16.40 ± 2.14 | 0.537 ± 0.110 | 12M | 13.32 |
-| 5 | PVT-v2-B2 | Stage1 | Wavelet | 16.08 ± 2.00 | 0.534 ± 0.097 | 8M | 12.07 |
-| 6 | PVT-v2-B2 | Stage1 | Frequency-Aware | 16.03 ± 1.95 | 0.521 ± 0.104 | 35M | 12.08 |
-| 7 | ResNet34 | Layer1 | Wavelet | 15.59 ± 2.01 | 0.490 ± 0.107 | 8M | 12.04 |
-| 8 | ResNet34 | Layer1 | Frequency-Aware | 15.54 ± 2.00 | 0.481 ± 0.105 | 35M | 11.99 |
-| 9 | ResNet34 | Layer1 | Attention | 15.33 ± 2.02 | 0.465 ± 0.109 | 12M | 12.75 |
-| 10 | ViT-Small | Block1 | Attention | 15.05 ± 2.04 | 0.440 ± 0.103 | 12M | 12.16 |
+| Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Params | Eval Time |
+|------|--------------|-------|---------|-----------|------|--------|-----------|
+| 🥇 **1** | **VGG16** | **Block1** | **TransposedConv** | **17.43 ± 1.72** | **0.565 ± 0.118** | **34K** | **0.85** |
+| 🥈 2 | VGG16 | Block1 | Frequency-Aware | 17.30 ± 1.76 | 0.576 ± 0.114 | 35M | 0.83 |
+| 🥉 3 | VGG16 | Block1 | Wavelet | 17.29 ± 1.64 | 0.568 ± 0.111 | 8M | 0.83 |
+| 4 | PVT-v2-B2 | Stage1 | Attention | 16.28 ± 1.87 | 0.517 ± 0.109 | 12M | 0.89 |
+| 5 | PVT-v2-B2 | Stage1 | Wavelet | 16.06 ± 1.84 | 0.527 ± 0.102 | 8M | 0.86 |
+| 6 | PVT-v2-B2 | Stage1 | Frequency-Aware | 15.86 ± 1.92 | 0.503 ± 0.107 | 35M | 0.85 |
+| 7 | ResNet34 | Layer1 | Wavelet | 15.69 ± 2.09 | 0.501 ± 0.114 | 8M | 0.79 |
+| 8 | PVT-v2-B2 | Stage1 | TransposedConv | 15.65 ± 1.47 | 0.488 ± 0.104 | 34K | 0.88 |
+| 9 | ResNet34 | Layer1 | Attention | 15.46 ± 2.19 | 0.486 ± 0.101 | 12M | 0.81 |
+| 10 | ViT-Small | Block1 | TransposedConv | 15.45 ± 1.96 | 0.458 ± 0.100 | 34K | 0.84 |
 
 **Winner Analysis:**
 
@@ -209,8 +209,8 @@ graph TB
     Root --> A([Why It Won])
     A --> A1([Highest spatial<br/>resolution<br/>112×112])
     A --> A2([Simplest decoder<br/>34K params])
-    A --> A3([Best PSNR<br/>17.35 dB])
-    A --> A4([Fastest training<br/>11.99 min])
+    A --> A3([Best PSNR<br/>17.43 dB])
+    A --> A4([Efficient eval<br/>0.85 min])
     
     Root --> B([Journey])
     B --> B1([Started:<br/>Attention hypothesis])
@@ -230,9 +230,9 @@ graph TB
 
 | Phase | Best Configuration | PSNR (dB) | Insight Gained |
 |-------|-------------------|-----------|----------------|
-| **Initial** | ResNet34 Layer1 + Attention | 15.33 | Attention baseline established |
-| **Phase 1** | VGG16 Block1 + Wavelet | 17.24 | Architecture matters more than decoder |
-| **Phase 2** | **VGG16 Block1 + TransposedConv** | **17.35** | **Simplicity wins!** |
+| **Initial** | ResNet34 Layer1 + Attention | 15.46 | Attention baseline established |
+| **Phase 1** | VGG16 Block1 + Frequency-Aware | 17.30 | Architecture matters more than decoder |
+| **Phase 2** | **VGG16 Block1 + TransposedConv** | **17.43** | **Simplicity wins!** |
 
 **Key Learning:** Through systematic experimentation, we discovered that:
 1. Initial Attention hypothesis was **suboptimal**
@@ -292,17 +292,17 @@ We tested three fusion strategies to combine features from multiple encoders:
 
 | Rank | Fusion Strategy | Decoder | PSNR (dB) | SSIM | Time (min) | Δ vs VGG16 Single |
 |------|----------------|---------|-----------|------|------------|-------------------|
-| 1 | **Weighted** | **TransposedConv** | **17.64 ± 1.60** | **0.586 ± 0.113** | **12.16** | **+0.29 dB** |
-| 2 | Concat | TransposedConv | 17.50 ± 1.57 | 0.584 ± 0.117 | 12.19 | +0.15 dB |
-| 3 | Attention | TransposedConv | 17.30 ± 1.60 | 0.570 ± 0.121 | 12.14 | -0.05 dB |
+| 1 | **Weighted** | **TransposedConv** | **17.65 ± 1.57** | **0.568 ± 0.116** | **0.91** | **+0.22 dB** |
+| 2 | Attention | TransposedConv | 17.60 ± 1.64 | 0.587 ± 0.113 | 0.89 | +0.17 dB |
+| 3 | Concat | TransposedConv | 17.37 ± 1.62 | 0.583 ± 0.117 | 0.91 | -0.06 dB |
 
-**Single Best Reference:** VGG16 Block1 + TransposedConv = 17.35 ± 1.73 dB
+**Single Best Reference:** VGG16 Block1 + TransposedConv = 17.43 ± 1.72 dB
 
 ```mermaid
 graph LR
-    A([VGG16 Single<br/>17.35 dB<br/>1 encoder]) --> D([Baseline])
-    B([Weighted Ensemble<br/>17.64 dB<br/>4 encoders]) --> E([+0.29 dB<br/>+1.7%])
-    C([Concat Ensemble<br/>17.50 dB<br/>4 encoders]) --> F([+0.15 dB<br/>+0.9%])
+    A([VGG16 Single<br/>17.43 dB<br/>1 encoder]) --> D([Baseline])
+    B([Weighted Ensemble<br/>17.65 dB<br/>4 encoders]) --> E([+0.22 dB<br/>+1.3%])
+    C([Concat Ensemble<br/>17.37 dB<br/>4 encoders]) --> F([-0.06 dB<br/>-0.3%])
     
     style A fill:#e1f5ff,stroke:#333,stroke-width:2px
     style B fill:#90EE90,stroke:#333,stroke-width:2px
@@ -316,25 +316,25 @@ graph LR
 
 | Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
 |---------|-----------|------|------------|------------------|
-| **TransposedConv** | **17.64 ± 1.60** | **0.586 ± 0.113** | **12.16** | **+0.29 dB** |
-| Wavelet | 17.14 ± 1.61 | 0.576 ± 0.114 | 12.13 | -0.21 dB |
-| Frequency-Aware | 17.25 ± 1.70 | 0.573 ± 0.119 | 12.19 | -0.10 dB |
+| **TransposedConv** | **17.65 ± 1.57** | **0.568 ± 0.116** | **0.91** | **+0.22 dB** |
+| Wavelet | 17.13 ± 1.59 | 0.566 ± 0.114 | 0.91 | -0.30 dB |
+| Frequency-Aware | 16.93 ± 1.65 | 0.552 ± 0.122 | 0.93 | -0.50 dB |
 
 #### Concatenation Fusion
 
 | Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
 |---------|-----------|------|------------|------------------|
-| **TransposedConv** | **17.50 ± 1.57** | **0.584 ± 0.117** | **12.19** | **+0.15 dB** |
-| Wavelet | 17.21 ± 1.70 | 0.591 ± 0.111 | 12.20 | -0.14 dB |
-| Frequency-Aware | 17.27 ± 1.58 | 0.562 ± 0.122 | 12.39 | -0.08 dB |
+| **TransposedConv** | **17.37 ± 1.62** | **0.583 ± 0.117** | **0.91** | **-0.06 dB** |
+| Frequency-Aware | 17.31 ± 1.58 | 0.568 ± 0.122 | 0.91 | -0.12 dB |
+| Wavelet | 17.18 ± 1.60 | 0.567 ± 0.115 | 0.91 | -0.25 dB |
 
 #### Attention Fusion
 
 | Decoder | PSNR (dB) | SSIM | Time (min) | vs. Single VGG16 |
 |---------|-----------|------|------------|------------------|
-| **TransposedConv** | **17.30 ± 1.60** | **0.570 ± 0.121** | **12.14** | **-0.05 dB** |
-| Wavelet | 17.24 ± 1.77 | 0.562 ± 0.115 | 12.17 | -0.11 dB |
-| Frequency-Aware | 17.02 ± 1.66 | 0.550 ± 0.111 | 12.20 | -0.33 dB |
+| **TransposedConv** | **17.60 ± 1.64** | **0.587 ± 0.113** | **0.89** | **+0.17 dB** |
+| Frequency-Aware | 17.41 ± 1.68 | 0.583 ± 0.112 | 0.90 | -0.02 dB |
+| Wavelet | 17.11 ± 1.73 | 0.570 ± 0.118 | 0.89 | -0.32 dB |
 
 ### 4.5 Ensemble Analysis
 
@@ -557,9 +557,9 @@ graph TD
 
 | Metric | Value | Rank |
 |--------|-------|------|
-| **PSNR** | **17.35 ± 1.73 dB** | **1st / 31** |
-| **SSIM** | **0.560 ± 0.121** | **3rd / 31** |
-| **Training Time** | **11.99 minutes** | **Fastest** |
+| **PSNR** | **17.43 ± 1.72 dB** | **1st / 31** |
+| **SSIM** | **0.565 ± 0.118** | **3rd / 31** |
+| **Eval Time** | **0.85 minutes** | **Competitive** |
 | **Parameters** | **34K trainable** | **Smallest** |
 | **Memory** | **~16GB GPU** | **Stable** |
 
@@ -569,17 +569,17 @@ graph TD
 
 | Metric | Initial (ResNet34 + Attention) | Final (VGG16 + TransposedConv) | Improvement |
 |--------|-------------------------------|--------------------------------|-------------|
-| PSNR | 15.33 dB | **17.35 dB** | **+13.2%** |
-| SSIM | 0.465 | **0.560** | **+20.4%** |
+| PSNR | 15.46 dB | **17.43 dB** | **+12.7%** |
+| SSIM | 0.486 | **0.565** | **+16.3%** |
 | Decoder Params | 12M | **34K** | **-99.7%** |
-| Training Time | 12.75 min | **11.99 min** | **-6.0%** |
+| Eval Time | 0.81 min | **0.85 min** | Comparable |
 | Memory | OK | **OK** | **Stable** |
 
 ### 7.3 Why This Configuration Wins
 
 ```mermaid
 graph TB
-    Root([VGG16 Block1 +<br/>TransposedConv<br/> CHAMPION])
+    Root([VGG16 Block1 +<br/>TransposedConv<br/>🏆 CHAMPION])
     
     Root --> A([Spatial Resolution])
     A --> A1([112×112<br/>12,544 locations])
@@ -839,9 +839,9 @@ graph LR
 
 | Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Time (min) |
 |------|--------------|-------|---------|-----------|------|------------|
-| 1 | **VGG16** | **Block1** | **TransposedConv** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99** |
-| 2 | VGG16 | Block1 | Wavelet | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 |
-| 3 | VGG16 | Block1 | Frequency-Aware | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 |
+| 🥇 1 | **VGG16** | **Block1** | **TransposedConv** | **17.35 ± 1.73** | **0.560 ± 0.121** | **11.99** |
+| 🥈 2 | VGG16 | Block1 | Wavelet | 17.24 ± 1.76 | 0.572 ± 0.115 | 12.08 |
+| 🥉 3 | VGG16 | Block1 | Frequency-Aware | 17.08 ± 1.73 | 0.563 ± 0.118 | 12.08 |
 | 4 | PVT-v2-B2 | Stage1 | Attention | 16.40 ± 2.14 | 0.537 ± 0.110 | 13.32 |
 | 5 | PVT-v2-B2 | Stage1 | Wavelet | 16.08 ± 2.00 | 0.534 ± 0.097 | 12.07 |
 | 6 | PVT-v2-B2 | Stage1 | Frequency-Aware | 16.03 ± 1.95 | 0.521 ± 0.104 | 12.08 |
@@ -851,10 +851,10 @@ graph LR
 | 10 | ViT-Small | Block1 | Attention | 15.05 ± 2.04 | 0.440 ± 0.103 | 12.16 |
 
 **Winner: VGG16 Block1 + TransposedConv Decoder**
--  Highest PSNR (17.35 dB)
--  Best SSIM (0.560)
--  Fastest training (11.99 min)
--  Minimal parameters (34K)
+- ✓ Highest PSNR (17.35 dB)
+- ✓ Best SSIM (0.560)
+- ✓ Fastest training (11.99 min)
+- ✓ Minimal parameters (34K)
 
 ---
 
@@ -1043,10 +1043,10 @@ graph LR
 
 | Comparison | PSNR Δ | Significant? |
 |------------|--------|--------------|
-| VGG16 Block1 vs ResNet34 Layer1 | +2.50 dB |  Yes |
-| VGG16 Block1 vs VGG16 Block3 | +4.71 dB |  Yes |
-| TransposedConv vs Wavelet (VGG16 Block1) | +0.11 dB |  No |
-| Best Ensemble vs VGG16 Block1 | +0.29 dB |  No |
+| VGG16 Block1 vs ResNet34 Layer1 | +2.50 dB | ✓ Yes |
+| VGG16 Block1 vs VGG16 Block3 | +4.71 dB | ✓ Yes |
+| TransposedConv vs Wavelet (VGG16 Block1) | +0.11 dB | ✗ No |
+| Best Ensemble vs VGG16 Block1 | +0.29 dB | ✗ No |
 
 **Conclusion:** VGG16 Block1 is significantly better than other architectures, but decoder choice (TransposedConv vs Complex) is not statistically significant.
 
@@ -1055,8 +1055,8 @@ graph LR
 ## 8. Experimental Summary
 
 **Total Experiments:** 43 configurations
--  Successful: 40
--  Failed (OOM): 3
+- ✓ Successful: 40
+- ✗ Failed (OOM): 3
 
 **Key Metrics:**
 - **Best PSNR:** 17.64 dB (Ensemble Weighted + TransposedConv)
