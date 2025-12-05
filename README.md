@@ -144,12 +144,8 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 ### Prerequisites
 
 - Python 3.10+
-- CUDA-capable GPU (recommended: 24GB+ VRAM)
-  - Standard experiments: 16GB+ GPU RAM sufficient
-  - VGG16 block1 experiments: 40GB+ GPU RAM required
-  - Ensemble experiments: 40GB+ GPU RAM recommended
-- 16GB+ system RAM
-- ~5GB disk space for dataset and models
+- CUDA-capable GPU (recommended)
+
 
 **Hardware used in this study:**
 - GPU: NVIDIA RTX 6000 Ada Generation (48GB VRAM)
