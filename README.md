@@ -167,7 +167,7 @@ conda activate cv_final
 # Install dependencies
 pip install -r requirements.txt
 
-# Download DIV2K dataset
+# For Downloading and Formatting DIV2K dataset,use
 python scripts/download_dataset.py
 ```
 
