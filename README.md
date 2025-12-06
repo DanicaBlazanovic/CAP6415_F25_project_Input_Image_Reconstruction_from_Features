@@ -88,7 +88,7 @@ Our best model (VGG-16 Block1 + Transposed Convolution Decoder) achieves high-qu
 - Diverse natural scenes (landscapes, urban, portraits, objects)
 - Resized to 224×224 for computational efficiency
 - Official split: 800 train (DIV2K_train_HR), 100 validation (DIV2K_valid_HR)
-- Link to download the dataset: https://www.kaggle.com/datasets/soumikrakshit/div2k-high-resolution-images
+- Dataset source: https://www.kaggle.com/datasets/soumikrakshit/div2k-high-resolution-images
 
 **Data Usage in This Study:**
 
