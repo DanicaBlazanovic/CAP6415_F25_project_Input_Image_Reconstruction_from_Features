@@ -71,7 +71,7 @@ Our best model (VGG-16 Block1 + Transposed Convolution Decoder) achieves high-qu
 
 
 
-*Figure: Reconstruction examples from DIV2K validation set. Each row shows three views: Original image (left), Reconstructed image with metrics (center), and Difference map (right). The model successfully preserves fine details, textures, and color fidelity across various scenes including wildlife, landscapes, and complex patterns.*
+*Figure: Qualitative results on DIV2K validation set. Baseline (left) vs. proposed VGG16 Block1 + Transposed Convolution (right). Each shows original, reconstructed, and difference map. Proposed method demonstrates better reconstruction quality with higher PSNR/SSIM and reduced errors.*
 
 **Key observations:**
 - Sharp detail preservation in high-frequency regions (animal fur, foliage)
