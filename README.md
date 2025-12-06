@@ -39,27 +39,33 @@ This document presents our main experimental setup and results; for baseline com
 
 The following table presents the best-performing model configurations ranked by Peak Signal-to-Noise Ratio (PSNR) on the DIV2K test set. Notably, **9 out of 10 top models utilize the Transposed Convolution or Wavelet decoder**, with ensemble architectures dominating the leaderboard. The best single-architecture model (**VGG-16 Block1 + Transposed Conv**) ranks 3rd overall, achieving competitive performance at a fraction of the computational cost. **VGG-16's high spatial resolution features (112×112) combined with the simple transposed convolution decoder proves remarkably effective**, outperforming all other single architectures and nearly matching ensemble performance. Ensemble models show consistent but marginal improvements (+0.3 dB PSNR) over the best single model, highlighting the trade-off between architectural complexity and reconstruction quality.
 
-| Rank | Model Configuration | PSNR (dB) | SSIM | Val Loss | Type |
-|:----:|---------------------|:---------:|:----:|:--------:|:----:|
-| 1 | **Ensemble All Weighted + Transposed Conv** | **17.64** | 0.586 | 0.478 | Ensemble |
-| 2 | **Ensemble All Concat + Transposed Conv** | **17.50** | 0.584 | 0.473 | Ensemble |
-| 3 | **VGG-16 Block1 + Transposed Conv** | **17.35** | 0.560 | 0.502 | **Single** |
-| 4 | Ensemble All Attention + Transposed Conv | 17.30 | 0.570 | 0.478 | Ensemble |
-| 5 | Ensemble All Concat + Frequency-Aware | 17.27 | 0.562 | 0.474 | Ensemble |
-| 6 | Ensemble All Weighted + Frequency-Aware | 17.25 | 0.573 | 0.477 | Ensemble |
-| 7 | VGG-16 Block1 + Wavelet | 17.24 | 0.572 | 0.482 | Single |
-| 8 | Ensemble All Attention + Wavelet | 17.24 | 0.562 | 0.480 | Ensemble |
-| 9 | Ensemble All Concat + Wavelet | 17.21 | **0.591** | 0.479 | Ensemble |
-| 10 | Ensemble All Weighted + Wavelet | 17.14 | 0.576 | 0.481 | Ensemble |
+
+
+| Rank | Model Configuration | PSNR (dB) | SSIM | Type |
+|:----:|---------------------|:---------:|:----:|:----:|
+| 1 | **Ensemble All Attention + Transposed Conv** | **17.58** | **0.581** | Ensemble |
+| 2 | **VGG16 Block1 + Transposed Conv** | **17.36** | **0.547** | **Single (Best)** |
+| 3 | Ensemble All Concat + Wavelet | 17.33 | **0.582** | Ensemble |
+| 4 | PVT-v2-B2 Stage1 + Wavelet | 15.86 | 0.495 | Single |
+| 5 | ResNet34 Layer1 + Wavelet | 15.65 | 0.509 | Single |
+| — | **ResNet34 Layer1 + Attention (Baseline)** | **13.53** | **0.376** | Single |
+
+**Key Findings:**
+- **Best Overall**: Ensemble model achieves 17.58 dB PSNR
+- **Best Single Model**: VGG16 Block1 + Transposed Conv (17.36 dB)
+- **Improvement over Baseline**: +3.83 dB PSNR (+28%), +0.171 SSIM (+45%)
+- **Top Decoder**: Transposed Convolution outperforms others
+
 
 ### Key Observations
-
--  **Best Overall**: Ensemble weighted fusion with transposed convolution decoder (**17.64 dB PSNR**)
--  **Best Single Model**: VGG-16 Block1 + Transposed Conv (**17.35 dB**) — only **0.29 dB behind best ensemble**
--  **VGG-16 Dominance**: VGG-16 Block1 with transposed convolution significantly outperforms ResNet, ViT, and PVT single architectures, demonstrating that **high spatial resolution (112×112) is more critical than architectural sophistication**
--  **Decoder Dominance**: Transposed convolution appears in **4 of top 4 models**; wavelet decoder in **4 of remaining 6**
--  **Ensemble vs. Single**: Minimal **+1.7% PSNR improvement** from ensembling despite **4× computational cost**
--  **SSIM Leader**: Ensemble concat + wavelet achieves highest SSIM (**0.591**) despite ranking 9th in PSNR
+- **Best Overall**: Ensemble attention fusion with transposed convolution decoder (**17.58 dB PSNR, 0.581 SSIM**)
+- **Best Single Model**: VGG16 Block1 + Transposed Conv (**17.36 dB**) — only **0.22 dB behind best ensemble**
+- **VGG16 Dominance**: VGG16 Block1 with transposed convolution significantly outperforms ResNet34, ViT, and PVT single architectures, demonstrating that **high spatial resolution (112×112) is more critical than architectural sophistication**
+- **Decoder Dominance**: Transposed convolution decoder appears in **top 3 models**; wavelet decoder achieves **highest SSIM (0.582)**
+- **Ensemble vs. Single**: Minimal **+1.3% PSNR improvement** from ensembling despite **4× computational cost**
+- **SSIM Leader**: Ensemble concat + wavelet achieves highest SSIM (**0.582**) while maintaining competitive PSNR (17.33 dB)
+- **Baseline Improvement**: Best single model (VGG16 Block1 + Transposed Conv) improves **+3.83 dB PSNR (+28%)** and **+0.171 SSIM (+45%)** over ResNet34 baseline (13.53 dB, 0.376 SSIM)
+- **Decoder Ranking**: Transposed Conv ≈ Wavelet > Frequency-Aware >> Attention decoder (attention performs at baseline level)
 
 ---
 ## Visual Results
@@ -72,14 +78,6 @@ Our best model (VGG-16 Block1 + Transposed Convolution Decoder) achieves high-qu
 
 
 *Figure: Qualitative results on DIV2K validation set. Baseline (left) vs. proposed VGG16 Block1 + Transposed Convolution (right). Each shows original, reconstructed, and difference map. Proposed method demonstrates better reconstruction quality with higher PSNR/SSIM and reduced errors.*
-
-**Key observations:**
-- Sharp detail preservation in high-frequency regions (animal fur, foliage)
-- Accurate color reproduction across diverse lighting conditions
-- Minimal reconstruction artifacts in complex textures
-- PSNR values consistently above 17 dB across test samples
-
-
 
 ## Dataset
 
