@@ -50,12 +50,6 @@ The following table presents the best-performing model configurations ranked by 
 | 5 | ResNet34 Layer1 + Wavelet | 15.65 | 0.509 | Single |
 | — | **ResNet34 Layer1 + Attention (Baseline)** | **13.53** | **0.376** | Single |
 
-**Key Findings:**
-- **Best Overall**: Ensemble model achieves 17.58 dB PSNR
-- **Best Single Model**: VGG16 Block1 + Transposed Conv (17.36 dB)
-- **Improvement over Baseline**: +3.83 dB PSNR (+28%), +0.171 SSIM (+45%)
-- **Top Decoder**: Transposed Convolution outperforms others
-
 
 ### Key Observations
 - **Best Overall**: Ensemble attention fusion with transposed convolution decoder (**17.58 dB PSNR, 0.581 SSIM**)
