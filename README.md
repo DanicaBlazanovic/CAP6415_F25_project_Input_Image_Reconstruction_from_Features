@@ -8,7 +8,7 @@
 ## Table of Contents
 
 - [Abstract](#abstrackt)
-- [Top 10 Models by PSNR Performance](#Top-10-Models-by-PSNR-Performance)
+- [Top 10 Models by PSNR Performance](#Top-Models-by-PSNR-and-SSIM-Performance)
 - [Key Observations](#key-observations)
 - [Dataset](#dataset)
 - [Key Findings](#key-findings)
