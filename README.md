@@ -29,10 +29,9 @@ This document presents our main experimental setup and results; for baseline com
 
 
 ---
+## Top Models by PSNR and SSIM Performance
 
-## Top 10 Models by PSNR Performance
-
-The following table presents the best-performing model configurations ranked by Peak Signal-to-Noise Ratio (PSNR) on the DIV2K test set. Notably, **9 out of 10 top models utilize the Transposed Convolution or Wavelet decoder**, with ensemble architectures dominating the leaderboard. The best single-architecture model (**VGG-16 Block1 + Transposed Conv**) ranks 3rd overall, achieving competitive performance at a fraction of the computational cost. **VGG-16's high spatial resolution features (112×112) combined with the simple transposed convolution decoder proves remarkably effective**, outperforming all other single architectures and nearly matching ensemble performance. Ensemble models show consistent but marginal improvements (+0.3 dB PSNR) over the best single model, highlighting the trade-off between architectural complexity and reconstruction quality.
+The following table presents the best-performing model configurations ranked by Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM) on the DIV2K test set. Notably, the top models are dominated by transposed convolution and wavelet decoders, with ensemble architectures occupying the highest positions. The best single-architecture model (VGG-16 Block1 + Transposed Conv) ranks 2nd overall, achieving 17.36 dB PSNR and 0.547 SSIM, demonstrating competitive performance at a fraction of the computational cost. VGG-16's high spatial resolution features (112×112) from Block1 combined with the simple transposed convolution decoder proves remarkably effective, significantly outperforming ResNet-34 (15.65 dB PSNR, 0.509 SSIM), ViT (15.41 dB PSNR, 0.445 SSIM), and PVT-v2 (15.86 dB PSNR, 0.495 SSIM) single architectures while nearly matching ensemble performance. The best ensemble model (Attention Fusion + Transposed Conv) achieves 17.58 dB PSNR and 0.581 SSIM, while the highest SSIM is obtained by Ensemble Concat + Wavelet (0.582 SSIM, 17.33 dB PSNR). Ensemble models show minimal improvement (+0.22 dB PSNR, +0.034 SSIM, representing +1.3% and +6.2% gains respectively) over the best single model despite 4× computational overhead, revealing substantial feature redundancy across architectures and highlighting the diminishing returns of ensemble complexity for this reconstruction task.
 
 
 | Rank | Model Configuration | PSNR (dB) | SSIM | Type |
