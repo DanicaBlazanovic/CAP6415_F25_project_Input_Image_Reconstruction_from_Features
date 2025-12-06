@@ -36,7 +36,7 @@ The following table presents the best-performing model configurations ranked by 
 
 | Rank | Model Configuration | PSNR (dB) | SSIM | Type |
 |:----:|---------------------|:---------:|:----:|:----:|
-| 1 | **Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) + Transposed Conv** | **17.58** | **0.581** | Ensemble |
+| 1 | **Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Attention Fusion + Transposed Conv** | **17.58** | **0.581** | Ensemble |
 | 2 | **VGG16 Block1 + Transposed Conv** | **17.36** | **0.547** | **Single (Best)** |
 | 3 | Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) + Wavelet | 17.33 | **0.582** | Ensemble |
 | 4 | PVT-v2-B2 Stage1 + Wavelet | 15.86 | 0.495 | Single |
