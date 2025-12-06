@@ -126,7 +126,7 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 - **CUDA Version:** 12.4
 - **Precision:** FP32 
 - **Framework:** PyTorch 2.0+ with cuDNN backend
-- **Batch size:** 8 
+
 
 **Note on timing comparisons:** Reported training times are machine-specific and depend on hardware, precision settings, dataloader configuration, and cuDNN optimization. These should be interpreted as relative comparisons within this study rather than absolute performance benchmarks. Times may vary significantly on different hardware configurations.
 
