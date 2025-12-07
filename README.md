@@ -25,7 +25,7 @@ This work investigates how accurately RGB images can be reconstructed from inter
 
 
 
-This document presents our main experimental setup and results; for baseline comparisons and additional methodology details, see [METHODOLOGY_BASELINES.md](METHODOLOGY_BASELINES.md).
+This document presents our main experimental setup and results; for baseline comparisons and additional methodology details, see [METHODOLOGY_BASELINES.md](METHODOLOGY_AND_EXPERIMENTS.md).
 
 
 ---
