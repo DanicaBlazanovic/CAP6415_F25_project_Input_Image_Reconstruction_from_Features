@@ -1,4 +1,4 @@
-# CNN Feature Inversion: Methodology and Results
+# Image Reconstruction from CNN Features: Systematic Ablation Study
 
 **Authors:** Danica Blazanovic, Abbas Khan  
 **Institution:** Florida Atlantic University  
@@ -8,9 +8,12 @@
 
 ## 1. Overview
 
-This study investigates reconstructing 224×224 RGB images from intermediate CNN features using frozen pre-trained encoders and trainable decoders. Through systematic experimentation across **43 configurations** (31 single models + 12 ensembles), we discovered that **VGG16 Block1 + TransposedConv decoder achieves 17.43 dB PSNR** - superior to complex alternatives.
+This study investigates reconstructing 224×224 RGB images from intermediate CNN features through systematic ablation across **43 configurations** (31 single models + 12 ensembles).
 
-**Key Finding:** Simple architectures with high spatial resolution outperform complex decoders with deeper features.
+**Baseline:** ResNet34 Layer1 + Attention → **13.53 dB PSNR**  
+**Proposed:** VGG16 Block1 + TransposedConv → **17.36 dB PSNR** (+28.4% improvement)
+
+**Key Finding:** High spatial resolution (112×112) with simple decoders outperforms deep features with complex decoders.
 
 ---
 
@@ -31,9 +34,26 @@ graph LR
     style E fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-### 2.2 Encoder: VGG16 Block1
+### 2.2 Experimental Design
 
-**Architecture:**
+**Architectures × Layers Tested:**
+- **ResNet34:** layer1 (56×56), layer2 (28×28)
+- **VGG16:** block1 (112×112), block3 (28×28), block5 (7×7)
+- **ViT-Small:** block0, block3, block6, block9, block11 (14×14, 196 tokens)
+- **PVT-v2-B2:** stage0, stage1, stage2, stage3 (56×56 to 7×7)
+
+**Decoders Tested:**
+1. **Attention:** Multi-head self-attention + upsampling
+2. **FrequencyAware:** DCT-based frequency decomposition
+3. **Wavelet:** Multi-scale wavelet transforms
+4. **TransposedConv:** Simple progressive upsampling
+
+**Ensembles:**
+- **Fusion:** Attention, Concat, Weighted
+- **Architectures:** ResNet34 layer1 + VGG16 block1 + ViT-Small block1 + PVT-v2-B2 stage1
+
+### 2.3 VGG16 Block1 Encoder
+
 ```mermaid
 graph LR
     A([Input<br/>3×224×224]) --> B([Conv2d<br/>3→64, 3×3])
@@ -48,13 +68,11 @@ graph LR
 
 **Specifications:**
 - Pre-trained on ImageNet-1K (frozen weights)
-- Output: 64 channels @ 112×112 resolution
-- 12,544 spatial locations (highest among tested layers)
+- Output: 64 channels @ 112×112 resolution = **12,544 spatial locations**
 - Captures low-level features: edges, textures, colors
 
-### 2.3 Decoder: Transposed Convolution
+### 2.4 TransposedConv Decoder
 
-**Architecture:**
 ```mermaid
 graph LR
     A([Features<br/>64×112×112]) --> B([ConvTranspose2d<br/>64→32, k=4, s=2, p=1])
@@ -69,220 +87,148 @@ graph LR
 
 **Specifications:**
 - Upsamples 112×112 → 224×224 (2× spatial)
-- Simple architecture: No attention, no frequency decomposition
-- Fast inference: 12-15 ms/image
+- Simple: No attention, no frequency decomposition
+- Parameters: ~200K (12× fewer than Attention decoder)
+- Fast inference: ~0.9 min/100 images
 
-**Alternative Decoders Tested:**
-- Attention (self-attention mechanisms)
-- Wavelet (multi-scale decomposition)
-- Frequency-Aware (DCT-based processing)
+### 2.5 Training Details
 
-### 2.4 Training
+| Parameter | Value |
+|-----------|-------|
+| Dataset | DIV2K (640 train, 160 val, 100 test) |
+| Loss | 0.5 × MSE + 0.5 × LPIPS (AlexNet) |
+| Optimizer | Adam (lr=1e-4) |
+| Scheduler | ReduceLROnPlateau (patience=5) |
+| Early Stopping | Patience 15 epochs |
+| Max Epochs | 30 |
+| Batch Size | 4 |
+| Hardware | NVIDIA RTX 6000 Ada (48GB) |
 
-**Dataset:** DIV2K
-- Training: 640 images (80%)
-- Validation: 160 images (20%)  
-- Test: 100 images
+### 2.6 Evaluation Metrics
 
-**Preprocessing:**
-1. Resize → 256×256
-2. Random crop → 224×224 (center crop for val/test)
-3. Normalize → ImageNet statistics
-4. Augmentation → Random horizontal flip (train only)
-
-**Loss Function:**
-$$\mathcal{L}_{\text{total}} = 0.5 \cdot \mathcal{L}_{\text{MSE}} + 0.5 \cdot \mathcal{L}_{\text{LPIPS}}$$
-
-**Optimization:**
-- Optimizer: Adam (lr=1e-4)
-- Scheduler: ReduceLROnPlateau (patience=5)
-- Early stopping: patience=15
-- Batch size: 4
-- Max epochs: 30
-
-**Hardware:** NVIDIA RTX 3090 (24GB), PyTorch 2.0.1
-
-### 2.5 Evaluation Metrics
-
-**PSNR (Peak Signal-to-Noise Ratio):**
-$$\text{PSNR} = 20 \log_{10} \left(\frac{1}{\sqrt{\text{MSE}}}\right) \text{ dB}$$
-
-**SSIM (Structural Similarity Index):**
-$$\text{SSIM} = \frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy} + C_2)}{(\mu_x^2 + \mu_y^2 + C_1)(\sigma_x^2 + \sigma_y^2 + C_2)}$$
-
-**LPIPS (Learned Perceptual Similarity):** AlexNet-based perceptual distance
+- **PSNR:** Peak Signal-to-Noise Ratio (dB, higher better)
+- **SSIM:** Structural Similarity Index (0-1, higher better)
+- All metrics: mean ± std over 100 test images
 
 ---
 
-## 3. Experimental Approach
+## 3. Baseline Results
 
-### 3.1 Systematic Ablation Strategy
+### 3.1 Initial Configuration
 
-```mermaid
-graph LR
-    A([Phase 1<br/>Attention Baseline]) --> B([Phase 2<br/>Decoder Exploration])
-    B --> C([Phase 3<br/>Architecture Search])
-    C --> D([Phase 4<br/>Final Validation])
-    
-    style A fill:#e1f5ff,stroke:#333,stroke-width:2px
-    style D fill:#90EE90,stroke:#333,stroke-width:2px
-```
-
-**Experimental Journey:**
-1. **Hypothesis:** Attention decoders would excel due to global context
-2. **Reality:** TransposedConv decoder achieved best results
-3. **Discovery:** Spatial resolution > decoder complexity
-
-### 3.2 Initial Baseline
-
-**ResNet34 Layer1 + Attention Decoder:**
+**ResNet34 Layer1 + Attention Decoder**
 
 | Metric | Value |
 |--------|-------|
-| PSNR | 15.33 ± 2.02 dB |
-| SSIM | 0.465 ± 0.109 |
-| Training Time | 12.75 minutes |
-| Spatial Resolution | 56×56 (3,136 locations) |
+| PSNR | 13.53 ± 2.48 dB |
+| SSIM | 0.376 ± 0.118 |
+| Training Time | ~30 min |
+| Eval Time | 0.85 min |
+
+**Observation:** Complex attention decoder with moderate spatial resolution (56×56, 3,136 locations) provides baseline performance.
 
 ---
 
-## 4. Results
+## 4. Systematic Ablation Study
 
-### 4.1 Phase 1: Decoder Exploration (VGG16 Block1)
+### 4.1 Ablation 1: Architecture Comparison (TransposedConv Decoder)
 
-**Question:** Is Attention decoder optimal?
+**Question:** Which architecture provides best features for reconstruction?
 
-| Decoder | PSNR (dB) | SSIM | Eval Time |
-|---------|-----------|------|-----------|
-| **TransposedConv** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
-| Frequency-Aware | 17.30 ± 1.76 | 0.576 ± 0.114 | 0.83 min |
-| Wavelet | 17.29 ± 1.64 | 0.568 ± 0.111 | 0.83 min |
+| Architecture | Layer | Spatial Res | PSNR (dB) | SSIM | Δ from Baseline |
+|--------------|-------|-------------|-----------|------|-----------------|
+| **VGG16** | **block1** | **112×112** | **17.36 ± 1.76** | **0.547 ± 0.121** | **+28.4%** |
+| PVT-v2-B2 | stage1 | 56×56 | 16.54 ± 1.81 | 0.533 ± 0.101 | +22.3% |
+| ResNet34 | layer1 | 56×56 | 15.04 ± 2.07 | 0.459 ± 0.110 | +11.2% |
+| ViT-Small | block0 | 14×14 (196 tokens) | 14.20 ± 2.24 | 0.408 ± 0.114 | +5.0% |
 
-**Discovery:** TransposedConv wins with simplest architecture (+12.7% vs Attention baseline).
+**Finding:** VGG16 block1's 112×112 features (12,544 locations) provide **28.4% PSNR improvement** over baseline. Spatial resolution is dominant factor.
 
-### 4.2 Phase 2: Architecture Comparison (TransposedConv Decoder)
+### 4.2 Ablation 2: Layer Depth Impact (VGG16 + TransposedConv)
 
-| Architecture | Layer | Resolution | Locations | PSNR (dB) | SSIM | Eval Time |
-|--------------|-------|-----------|-----------|-----------|------|-----------|
-| **VGG16** | **Block1** | **112×112** | **12,544** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
-| PVT-v2-B2 | Stage1 | 56×56 | 3,136 | 15.65 ± 1.47 | 0.488 ± 0.104 | 0.88 min |
-| ViT-Small | Block1 | 14×14 | 196 | 15.45 ± 1.96 | 0.458 ± 0.100 | 0.84 min |
-| ResNet34 | Layer1 | 56×56 | 3,136 | 15.04 ± 2.07 | 0.459 ± 0.110 | 0.80 min |
+**Question:** How does layer depth affect reconstruction quality?
 
-**Key Finding:** Higher spatial resolution (112×112) dominates performance.
+| Layer | Spatial Res | Locations | PSNR (dB) | SSIM | Degradation |
+|-------|-------------|-----------|-----------|------|-------------|
+| **block1** | **112×112** | **12,544** | **17.36 ± 1.76** | **0.547 ± 0.121** | **—** |
+| block3 | 28×28 | 784 | 12.71 ± 2.02 | 0.320 ± 0.110 | **-26.8%** |
+| block5 | 7×7 | 49 | 12.26 ± 1.83 | 0.269 ± 0.099 | **-29.4%** |
 
-### 4.3 Phase 3: Layer Depth Ablation
+**Finding:** Progressive degradation with depth. Block5 (7×7) loses **29.4% PSNR** vs block1 (112×112). Spatial downsampling irreversibly destroys information.
 
-#### VGG16 Layer Comparison (TransposedConv Decoder)
+### 4.3 Ablation 3: Decoder Complexity (VGG16 Block1)
 
-| Layer | Resolution | Locations | PSNR (dB) | SSIM | Degradation |
-|-------|-----------|-----------|-----------|------|-------------|
-| **Block1** | **112×112** | **12,544** | **17.43 ± 1.72** | **0.565 ± 0.118** | **—** |
-| Block3 | 28×28 | 784 | 12.60 ± 2.13 | 0.335 ± 0.108 | **-27.7%** |
+**Question:** Do complex decoders improve reconstruction?
 
-#### ResNet34 Layer Comparison
+| Decoder | PSNR (dB) | SSIM | Params | Eval Time |
+|---------|-----------|------|--------|-----------|
+| **TransposedConv** | **17.36 ± 1.76** | **0.547 ± 0.121** | **~200K** | **0.90 min** |
+| Wavelet | 17.15 ± 1.68 | 0.553 ± 0.122 | ~400K | 0.87 min |
+| FrequencyAware | 16.91 ± 1.75 | 0.544 ± 0.113 | ~350K | 0.88 min |
+| Attention | 12.99 ± 2.58 | 0.380 ± 0.119 | ~2.5M | 0.85 min |
 
-| Layer | Resolution | Locations | PSNR (dB) | SSIM | Degradation |
-|-------|-----------|-----------|-----------|------|-------------|
-| **Layer1** | **56×56** | **3,136** | **15.04 ± 2.07** | **0.459 ± 0.110** | **—** |
-| Layer2 | 28×28 | 784 | 12.94 ± 2.06 | 0.327 ± 0.110 | **-14.0%** |
+**Finding:** Simple TransposedConv achieves best PSNR despite **12× fewer parameters** than Attention decoder. Complex decoders hurt performance (Attention: -25.2% PSNR).
 
-**Critical Insight:** Every 2× reduction in resolution costs ~10-15% PSNR.
-
-### 4.4 Phase 4: Complete Decoder Comparison
+### 4.4 Ablation 4: Cross-Architecture Decoder Analysis
 
 #### ResNet34 Layer1
 
-| Decoder | PSNR (dB) | SSIM | Eval Time |
-|---------|-----------|------|-----------|
-| Wavelet | 15.69 ± 2.09 | 0.501 ± 0.114 | 0.79 min |
-| Attention | 15.46 ± 2.19 | 0.486 ± 0.101 | 0.81 min |
-| Frequency-Aware | 15.25 ± 2.05 | 0.470 ± 0.111 | 0.81 min |
-| TransposedConv | 15.04 ± 2.07 | 0.459 ± 0.110 | 0.80 min |
+| Decoder | PSNR (dB) | SSIM | Δ from TransposedConv |
+|---------|-----------|------|-----------------------|
+| Wavelet | 15.65 ± 2.27 | 0.509 ± 0.095 | +4.1% |
+| FrequencyAware | 15.19 ± 2.02 | 0.462 ± 0.110 | +1.0% |
+| **TransposedConv** | **15.04 ± 2.07** | **0.459 ± 0.110** | **—** |
+| Attention | 13.53 ± 2.48 | 0.376 ± 0.118 | -10.0% |
 
-#### VGG16 Block1
+#### ViT-Small Block0
 
-| Decoder | PSNR (dB) | SSIM | Eval Time |
-|---------|-----------|------|-----------|
-| **TransposedConv** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85 min** |
-| Frequency-Aware | 17.30 ± 1.76 | 0.576 ± 0.114 | 0.83 min |
-| Wavelet | 17.29 ± 1.64 | 0.568 ± 0.111 | 0.83 min |
+| Decoder | PSNR (dB) | SSIM | Δ from TransposedConv |
+|---------|-----------|------|-----------------------|
+| FrequencyAware | 14.70 ± 2.20 | 0.442 ± 0.109 | +3.5% |
+| Attention | 14.33 ± 2.18 | 0.427 ± 0.109 | +0.9% |
+| **TransposedConv** | **14.20 ± 2.24** | **0.408 ± 0.114** | **—** |
+| Wavelet | 13.38 ± 2.41 | 0.382 ± 0.116 | -5.8% |
 
-#### ViT-Small Block1
+**Finding:** No single decoder wins across all architectures. VGG16 benefits most from TransposedConv (+2.45 dB vs FrequencyAware).
 
-| Decoder | PSNR (dB) | SSIM | Eval Time |
-|---------|-----------|------|-----------|
-| **TransposedConv** | **15.45 ± 1.96** | **0.458 ± 0.100** | **0.84 min** |
-| Attention | 15.42 ± 1.95 | 0.449 ± 0.109 | 0.84 min |
-| Frequency-Aware | 14.72 ± 2.14 | 0.433 ± 0.107 | 0.83 min |
-| Wavelet | 13.29 ± 2.50 | 0.369 ± 0.129 | 0.82 min |
+### 4.5 Ablation 5: Ensemble vs Single Model
 
-### 4.5 Top 10 Single Models
+**Configuration:** ResNet34 layer1 + VGG16 block1 + ViT-Small block1 + PVT-v2-B2 stage1
 
-| Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Eval Time |
-|------|--------------|-------|---------|-----------|------|-----------|
-| 🥇 **1** | **VGG16** | **Block1** | **TransposedConv** | **17.43 ± 1.72** | **0.565 ± 0.118** | **0.85** |
-| 🥈 2 | VGG16 | Block1 | Frequency-Aware | 17.30 ± 1.76 | 0.576 ± 0.114 | 0.83 |
-| 🥉 3 | VGG16 | Block1 | Wavelet | 17.29 ± 1.64 | 0.568 ± 0.111 | 0.83 |
-| 4 | PVT-v2-B2 | Stage1 | Attention | 16.28 ± 1.87 | 0.517 ± 0.109 | 0.89 |
-| 5 | PVT-v2-B2 | Stage1 | Wavelet | 16.06 ± 1.84 | 0.527 ± 0.102 | 0.86 |
-| 6 | PVT-v2-B2 | Stage1 | Frequency-Aware | 15.86 ± 1.92 | 0.503 ± 0.107 | 0.85 |
-| 7 | ResNet34 | Layer1 | Wavelet | 15.69 ± 2.09 | 0.501 ± 0.114 | 0.79 |
-| 8 | PVT-v2-B2 | Stage1 | TransposedConv | 15.65 ± 1.47 | 0.488 ± 0.104 | 0.88 |
-| 9 | ResNet34 | Layer1 | Attention | 15.46 ± 2.19 | 0.486 ± 0.101 | 0.81 |
-| 10 | ViT-Small | Block1 | TransposedConv | 15.45 ± 1.96 | 0.458 ± 0.100 | 0.84 |
+#### Best Ensembles (TransposedConv Decoder)
 
-### 4.6 Ensemble Results
+| Rank | Fusion | PSNR (dB) | SSIM | Δ vs Best Single |
+|------|--------|-----------|------|------------------|
+| 1 | Attention | 17.58 ± 1.68 | 0.581 ± 0.117 | +0.22 dB (+1.3%) |
+| 2 | Weighted | 17.41 ± 1.60 | 0.562 ± 0.117 | +0.05 dB (+0.3%) |
+| 3 | Concat | 17.29 ± 1.60 | 0.567 ± 0.115 | -0.07 dB (-0.4%) |
 
-**Configuration:** ResNet34 Layer1 + VGG16 Block1 + ViT-Small Block1 + PVT-v2-B2 Stage1
+**Reference:** VGG16 block1 + TransposedConv = **17.36 ± 1.76 dB**
 
-**Fusion Strategies Tested:**
-1. **Weighted:** Learnable scalar weight per architecture
-2. **Attention:** Spatial attention weights per location
-3. **Concatenation:** Channel-wise stacking
-
-#### Ensemble Performance (TransposedConv Decoder)
-
-| Rank | Fusion Strategy | PSNR (dB) | SSIM | Time (min) | Δ vs VGG16 Single |
-|------|----------------|-----------|------|------------|-------------------|
-| 1 | **Weighted** | **17.65 ± 1.57** | **0.568 ± 0.116** | **0.91** | **+0.22 dB** |
-| 2 | Attention | 17.60 ± 1.64 | 0.587 ± 0.113 | 0.89 | +0.17 dB |
-| 3 | Concat | 17.37 ± 1.62 | 0.583 ± 0.117 | 0.91 | -0.06 dB |
-
-**Reference:** VGG16 Block1 + TransposedConv (Single) = 17.43 ± 1.72 dB
-
-#### Cost-Benefit Analysis
-
-| Model Type | Forward Passes | Memory | PSNR | Cost per dB |
-|------------|---------------|--------|------|-------------|
-| Single VGG16 | 1× | 16GB | 17.43 dB | 1× (baseline) |
-| Ensemble | 4× | 20GB | 17.65 dB | **13.8×** worse |
-
-**Ensemble Conclusion:** **NOT RECOMMENDED**
-- Only +1.3% improvement (0.22 dB)
-- 4× encoders = 4× compute, 4× memory, complex deployment
-- Single VGG16 provides 99% performance with 25% complexity
-
-**Why Ensembles Provide Marginal Gains:**
-1. Feature redundancy (all ImageNet-trained)
-2. Resolution bottleneck (VGG16 dominates)
-3. Decoder capacity limits multi-source benefit
-4. Reconstruction is primarily local, not semantic
+**Finding:** Best ensemble gains only **0.22 dB (1.3%)** over best single model despite 4× computational cost. **Not recommended** for practical use.
 
 ---
 
-## 5. Analysis
+## 5. Top-10 Model Ranking
 
-### 5.1 Spatial Resolution Impact
+| Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Type |
+|------|--------------|-------|---------|-----------|------|------|
+| 1 | Ensemble | All | Attention + TransposedConv | 17.58 ± 1.68 | 0.581 | Ensemble |
+| 2 | Ensemble | All | Weighted + TransposedConv | 17.41 ± 1.60 | 0.562 | Ensemble |
+| **3** | **VGG16** | **block1** | **TransposedConv** | **17.36 ± 1.76** | **0.547** | **Single** |
+| 4 | Ensemble | All | Concat + FrequencyAware | 17.39 ± 1.51 | 0.569 | Ensemble |
+| 5 | Ensemble | All | Weighted + FrequencyAware | 17.34 ± 1.59 | 0.578 | Ensemble |
+| 6 | Ensemble | All | Concat + Wavelet | 17.33 ± 1.63 | 0.582 | Ensemble |
+| 7 | VGG16 | block1 | Wavelet | 17.15 ± 1.68 | 0.553 | Single |
+| 8 | VGG16 | block1 | FrequencyAware | 16.91 ± 1.75 | 0.544 | Single |
+| 9 | PVT-v2-B2 | stage1 | TransposedConv | 16.54 ± 1.81 | 0.533 | Single |
+| 10 | PVT-v2-B2 | stage1 | Attention | 16.28 ± 1.87 | 0.517 | Single |
 
-| Resolution | Best Example | Locations | PSNR (dB) | Degradation |
-|-----------|--------------|-----------|-----------|-------------|
-| **112×112** | **VGG16 Block1** | **12,544** | **17.43** | **—** |
-| 56×56 | ResNet34 Layer1 | 3,136 | 15.04 | **-13.7%** |
-| 28×28 | VGG16 Block3 | 784 | 12.60 | **-27.7%** |
-| 14×14 | ViT-Small Block1 | 196 | 15.45 | **-11.4%** |
+---
 
-### 5.2 Experimental Journey
+## 6. Key Findings
+
+### 6.1 Experimental Journey
 
 ```mermaid
 graph TB
@@ -296,31 +242,58 @@ graph TB
     style E fill:#FFD700,stroke:#333,stroke-width:3px
 ```
 
-### 5.3 Statistical Significance
+### 6.2 Spatial Resolution Dominates Performance
+- **112×112 (VGG16 block1):** 17.36 dB
+- **56×56 (ResNet34 layer1):** 15.04 dB (-13.4%)
+- **28×28 (VGG16 block3):** 12.71 dB (-26.8%)
+- **7×7 (VGG16 block5):** 12.26 dB (-29.4%)
 
-**PSNR differences > 0.5 dB are statistically significant (σ ≈ 1.7 dB)**
+**Conclusion:** Each 2× spatial reduction costs ~10-15% PSNR.
 
-| Comparison | PSNR Δ | Significant? |
-|------------|--------|--------------|
-| VGG16 vs ResNet34 | +2.39 dB | ✓ Yes |
-| VGG16 Block1 vs Block3 | +4.83 dB | ✓ Yes |
-| TransposedConv vs Wavelet (VGG16) | +0.14 dB | ✗ No |
-| Best Ensemble vs Single | +0.22 dB | ✗ No |
+### 6.3 Simple Decoders Outperform Complex Ones
+- **TransposedConv (simple):** 17.36 dB, 200K params
+- **Attention (complex):** 12.99 dB, 2.5M params (-25.2%)
+
+**Conclusion:** Decoder simplicity prevents overfitting on limited data (640 images).
+
+### 6.4 Ensembles Provide Marginal Gains
+- **Best ensemble:** 17.58 dB
+- **Best single:** 17.36 dB
+- **Improvement:** +0.22 dB (1.3%) for 4× compute cost
+
+**Conclusion:** Single VGG16 block1 model preferred for deployment.
+
+### 6.5 Architecture Choice Matters
+VGG16's sequential design with large early feature maps enables superior reconstruction vs ResNet's aggressive early downsampling.
+
+### 6.6 Deep Features Lose Spatial Information
+Semantic abstraction in deep layers (block3+, layer2+) irreversibly destroys fine-grained spatial details needed for reconstruction.
 
 ---
 
-## 6. Final Winner: VGG16 Block1 + TransposedConv
+## 7. Statistical Analysis
 
-### 6.1 Performance
+### 7.1 Significance Testing
 
-| Metric | Value | Rank |
-|--------|-------|------|
-| **PSNR** | **17.43 ± 1.72 dB** | **1st / 31** |
-| **SSIM** | **0.565 ± 0.118** | **3rd / 31** |
-| **Eval Time** | **0.85 minutes** | **Competitive** |
-| **Memory** | **~16GB GPU** | **Stable** |
+**PSNR differences > 0.5 dB are statistically significant (σ ≈ 1.7 dB)**
 
-### 6.2 Why This Configuration Wins
+| Comparison | Δ PSNR | Significant? |
+|------------|--------|--------------|
+| VGG16 block1 vs ResNet34 layer1 | +2.32 dB | ✓ Yes |
+| VGG16 block1 vs block3 | +4.65 dB | ✓ Yes |
+| VGG16 block1 vs block5 | +5.10 dB | ✓ Yes |
+| TransposedConv vs Wavelet (VGG16) | +0.21 dB | ✗ No |
+| Best Ensemble vs Best Single | +0.22 dB | ✗ No |
+
+### 7.2 Baseline vs Proposed
+
+| Metric | Baseline (ResNet34 + Attention) | Proposed (VGG16 + TransposedConv) | Improvement |
+|--------|--------------------------------|----------------------------------|-------------|
+| **PSNR** | 13.53 ± 2.48 dB | **17.36 ± 1.76 dB** | **+28.4%** |
+| **SSIM** | 0.376 ± 0.118 | **0.547 ± 0.121** | **+45.5%** |
+| **Consistency** | σ = 2.48 | **σ = 1.76** | **-29.0% variance** |
+
+### 7.3 Why VGG16 Block1 + TransposedConv Wins
 
 ```mermaid
 graph TB
@@ -344,67 +317,82 @@ graph TB
     style C fill:#90EE90,stroke:#333,stroke-width:2px
 ```
 
-### 6.3 Improvement Over Baseline
-
-| Metric | Initial (ResNet34 + Attention) | Final (VGG16 + TransposedConv) | Improvement |
-|--------|-------------------------------|--------------------------------|-------------|
-| PSNR | 15.33 dB | **17.43 dB** | **+13.7%** |
-| SSIM | 0.465 | **0.565** | **+21.5%** |
-| Eval Time | 12.75 min | **0.85 min** | **-93.3%** |
-
----
-
-## 7. Key Findings
-
-1. **Spatial resolution is paramount** - 112×112 features preserve critical spatial information
-2. **Decoder simplicity avoids overfitting** - Simple architecture sufficient with limited training data (640 images)
-3. **Architectural choice matters** - VGG16's sequential design facilitates feature inversion
-4. **Ensembles not worth cost** - Only 1.3% gain for 4× overhead
-
 ---
 
 ## 8. Practical Recommendations
 
-### ✓ For Best Quality
-**Use VGG16 Block1 + TransposedConv Decoder**
-- 17.43 dB PSNR, 0.565 SSIM
-- Stable 16GB GPU memory usage
-- 0.85 min evaluation time
+### ✓ Recommended Configuration
 
-### ✓ For Limited GPU Memory
-**Use ResNet34 Layer1 + TransposedConv Decoder**
-- 15.04 dB PSNR, 0.459 SSIM
-- Lower memory footprint (56×56 vs 112×112)
-- ~12GB GPU memory
+**VGG16 Block1 + TransposedConv Decoder**
 
-### ✗ What to Avoid
-- **Complex Decoders** (Attention, Frequency-Aware, Wavelet): No significant improvement
-- **Ensemble Models**: Only 1.3% gain for 4× complexity
-- **Deep Layers** (Block3+): Resolution loss too severe
+**Why:**
+- Best single model: 17.36 dB PSNR
+- Simple deployment (1 encoder, 200K decoder)
+- 99% of ensemble performance at 25% cost
+- Fast inference: ~0.9 min/100 images
+
+**Use Cases:**
+- Feature visualization
+- Model interpretability
+- Image compression analysis
+- Real-time reconstruction (with optimization)
+
+### ⚠️ Not Recommended
+
+**Ensembles:**
+- Only 1.3% improvement over single model
+- 4× computational overhead
+- Complex deployment
+- Marginal quality gain not worth cost
+
+**Complex Decoders (Attention, FrequencyAware, Wavelet):**
+- No consistent improvement over TransposedConv
+- Higher parameter count → overfitting risk
+- Slower inference
+- Added complexity without benefit
+
+**Deep Layers (block3+, layer2+):**
+- Severe PSNR degradation (>25%)
+- Spatial information irreversibly lost
+- No decoder can recover deep feature information
 
 ---
 
-## 9. Experimental Summary
+## 9. Ablation Summary
 
-| Category | Value |
-|----------|-------|
-| **Total Experiments** | 43 configurations |
-| **Successful** | 40 experiments |
-| **Failed (OOM)** | 3 experiments |
-| **Best PSNR** | 17.65 dB (ensemble) |
-| **Best Single** | 17.43 dB |
-| **PSNR Range** | 4.83 dB span |
-| **Total GPU Hours** | ~8.5 hours |
+| Ablation | Variable | Winner | Key Insight |
+|----------|----------|--------|-------------|
+| **1. Architecture** | ResNet, VGG, ViT, PVT | **VGG16** | Large early features (112×112) critical |
+| **2. Layer Depth** | block1, block3, block5 | **block1** | Shallow layers preserve spatial details |
+| **3. Decoder** | Attention, Freq, Wavelet, TransposedConv | **TransposedConv** | Simplicity prevents overfitting |
+| **4. Ensemble** | Single vs Multi-arch | **Single** | Marginal gain (1.3%) not worth 4× cost |
+
+**Central Principle:** Spatial resolution > decoder sophistication
 
 ---
 
-## 10. Conclusion
+## 10. Experimental Statistics
 
-Through systematic experimentation starting with Attention-based decoders, we discovered that **the simplest decoder (TransposedConv) combined with highest spatial resolution (VGG16 Block1) achieves optimal results**. This challenges the assumption that complex attention mechanisms are necessary for reconstruction tasks.
+| Metric | Value |
+|--------|-------|
+| **Total Configurations** | 43 (31 single + 12 ensemble) |
+| **Successful Runs** | 43 |
+| **Best PSNR (Overall)** | 17.58 dB (ensemble) |
+| **Best PSNR (Single)** | 17.36 dB (VGG16 block1 + TransposedConv) |
+| **Worst PSNR** | 12.26 dB (VGG16 block5 + TransposedConv) |
+| **PSNR Range** | 5.32 dB |
+| **Total GPU Hours** | ~35 hours |
+| **Avg Training Time** | ~50 min/model |
 
-Our experimental journey from complex (Attention) to simple (TransposedConv) yielded **13.7% PSNR improvement** - a powerful demonstration of the "less is more" principle in deep learning.
+---
 
-**Core Principle:** For image reconstruction, spatial resolution > decoder sophistication.
+## 11. Conclusion
+
+Through systematic ablation across architectures, layers, and decoders, we established that **simple TransposedConv decoders with high spatial resolution features (VGG16 block1, 112×112) achieve optimal reconstruction quality (17.36 dB PSNR)**. This represents a **28.4% improvement** over our baseline (ResNet34 layer1 + Attention, 13.53 dB).
+
+**Core Finding:** Spatial resolution preservation dominates reconstruction quality. Complex decoders and ensemble approaches provide marginal or negative returns. The "less is more" principle applies: simple architectures with rich spatial features outperform complex designs with abstract features.
+
+**Recommended Configuration:** VGG16 Block1 + TransposedConv decoder for optimal quality-complexity tradeoff.
 
 ---
 
@@ -422,10 +410,8 @@ Our experimental journey from complex (Attention) to simple (TransposedConv) yie
 
 [1] Simonyan, K., & Zisserman, A. (2015). Very Deep Convolutional Networks for Large-Scale Image Recognition. *ICLR*.
 
-[2] Agustsson, E., & Timofte, R. (2017). NTIRE 2017 Challenge on Single Image Super-Resolution. *CVPRW*.
+[2] Mahendran, A., & Vedaldi, A. (2015). Understanding Deep Image Representations by Inverting Them. *CVPR*.
 
 [3] Zhang, R., et al. (2018). The Unreasonable Effectiveness of Deep Features as a Perceptual Metric. *CVPR*.
 
-[4] Mahendran, A., & Vedaldi, A. (2015). Understanding Deep Image Representations by Inverting Them. *CVPR*.
-
-[5] Wang, Z., et al. (2004). Image Quality Assessment: From Error Visibility to Structural Similarity. *IEEE TIP*.
+[4] Agustsson, E., & Timofte, R. (2017). NTIRE 2017 Challenge on Single Image Super-Resolution. *CVPRW*.
