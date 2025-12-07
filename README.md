@@ -132,12 +132,6 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 - CUDA-capable GPU (recommended)
 
 
-**Hardware used in this study:**
-- GPU: NVIDIA RTX 6000 Ada Generation (48GB VRAM)
-- CUDA: 12.4
-- Driver: 550.107.02
-
-
 ### Setup
 
 ```bash
