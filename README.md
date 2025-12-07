@@ -173,22 +173,22 @@ seaborn>=0.12.0
 ### 1. Run Complete Experiment Suite
 ```bash
 # Train single experiment
-python train.py --arch vgg16 --layer block1 --decoder transposed_conv
+python scripts/train.py --arch vgg16 --layer block1 --decoder transposed_conv
 
 # Train ensemble
-python train.py --arch ensemble --fusion attention --decoder transposed_conv
+python scripts/train.py --arch ensemble --fusion attention --decoder transposed_conv
 
 # Train all experiments
-python train.py --mode all
+python scripts/train.py --mode all
 
 # Evaluate single experiment
-python evaluate.py --arch vgg16 --layer block1 --decoder transposed_conv
+python  scripts/evaluate.py --arch vgg16 --layer block1 --decoder transposed_conv
 
 # Evaluate ensemble
-python evaluate.py --arch ensemble --fusion attention --decoder transposed_conv
+python scripts/evaluate.py --arch ensemble --fusion attention --decoder transposed_conv
 
 # Evaluate all experiments
-python evaluate.py --mode all
+python scripts/evaluate.py --mode all
 ```
 
 ---
