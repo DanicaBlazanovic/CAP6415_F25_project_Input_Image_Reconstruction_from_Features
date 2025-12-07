@@ -37,13 +37,16 @@ The following table presents the best-performing model configurations ranked by 
 
 | Rank | Model Configuration | PSNR (dB) | SSIM | Type |
 |:----:|---------------------|:---------:|:----:|:----:|
-| 1 | **Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Fusion + Transposed Conv** | **17.58** | **0.581** | Ensemble |
-| 2 | **VGG16 Block1 + Transposed Conv** | **17.36** | **0.547** | **Single (Best)** |
-| 3 | Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) + Wavelet | 17.33 | **0.582** | Ensemble |
-| 4 | PVT-v2-B2 Stage1 + Wavelet | 15.86 | 0.495 | Single |
-| 5 | ResNet34 Layer1 + Wavelet | 15.65 | 0.509 | Single |
-| 6 | ViT Small Block1 + Attention | 15.41 | 0.445 | Single |
-| — | **ResNet34 Layer1 + Attention (Baseline)** | **13.53** | **0.376** | Single |
+| 1 | **Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Attention Fusion + Transposed Conv** | **17.58 ± 1.68** | **0.581 ± 0.117** | Ensemble |
+| 2 | **VGG16 Block1 + Transposed Conv** | **17.36 ± 1.76** | **0.547 ± 0.121** | **Single (Best)** |
+| 3 | Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Concat + Wavelet | 17.33 ± 1.63 | **0.582 ± 0.110** | Ensemble |
+| 4 | PVT-v2-B2 Stage1 + Wavelet | 15.86 ± 1.78 | 0.495 ± 0.107 | Single |
+| 5 | ResNet34 Layer1 + Wavelet | 15.65 ± 2.27 | 0.509 ± 0.095 | Single |
+| 6 | ViT Small Block1 + Attention | 15.41 ± 1.84 | 0.445 ± 0.111 | Single |
+| — | **ResNet34 Layer1 + Attention (Baseline)** | **13.53 ± 2.48** | **0.376 ± 0.118** | Single |
+
+
+
 
 ### Key Observations
 - **Best Overall**: Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) with attention fusion and transposed convolution decoder (**17.58 dB PSNR, 0.581 SSIM**)
