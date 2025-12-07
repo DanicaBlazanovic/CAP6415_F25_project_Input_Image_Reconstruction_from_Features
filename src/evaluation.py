@@ -365,13 +365,13 @@ def evaluate_model(model, test_loader, config, device='cuda'):
     eval_dir = Path(config['save_dir']) / model_type / f'evaluation_{exp_name}'
     
     # Subdirectories for different output types
-    recon_dir = eval_dir / 'reconstructions'      # Reconstructed image arrays
+    # recon_dir = eval_dir / 'reconstructions'      # Reconstructed image arrays
     metrics_dir = eval_dir / 'metrics'            # CSV and JSON metrics
     vis_dir = eval_dir / 'visualizations'         # PNG visualizations
     
     # Create all directories (parents=True creates intermediate dirs)
     # exist_ok=True prevents error if directories already exist
-    for dir_path in [recon_dir, metrics_dir, vis_dir]:
+    for dir_path in [metrics_dir, vis_dir]:
         dir_path.mkdir(parents=True, exist_ok=True)
     
     # Print evaluation header for logging
@@ -449,10 +449,10 @@ def evaluate_model(model, test_loader, config, device='cuda'):
                     'ssim': float(ssim_val)
                 })
                 
-                # Save reconstruction visualizations for first 50 images
+                # Save reconstruction visualizations for first 100 images
                 # Full test set would create too many files
                 # 50 images sufficient for visual inspection
-                if img_idx < 50:
+                if img_idx < 100:
                     save_reconstruction_comparison(
                         original, recon, img_idx, 
                         psnr_val, ssim_val, vis_dir
