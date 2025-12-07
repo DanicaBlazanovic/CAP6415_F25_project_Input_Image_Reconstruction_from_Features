@@ -204,24 +204,30 @@ CV_Final_Project/
 │   └── DIV2K_test_HR/           # Test dataset (100 images from DIV2K_valid_HR)
 │
 ├── src/
-│   ├── models.py                 # Encoder and decoder architectures
-│   ├── dataset.py                # Data loading and preprocessing
-│   ├── train.py                  # Training loop implementation
-│   ├── evaluate.py               # Metrics calculation (PSNR, SSIM, LPIPS)
-│   └── utils.py                  # Helper functions and visualization
+│   ├── models.py                # Encoder and decoder architectures
+│   ├── dataset.py               # Data loading and preprocessing
+│   ├── training.py              # Training loop implementation
+│   ├── evaluation.py            # Metrics calculation (PSNR, SSIM, LPIPS)
+│   └── utils.py                 # Helper functions and visualization
 │
 ├── scripts/
-│   ├── train.py                  # Main experiment runner
-│   ├── evaluate.py               # Evaluate 
-│
+│   ├── download_dataset.py      # Dataset download and setup script
+│   ├── train.py                 # Main training script
+│   └── evaluate.py              # Main evaluation script
 │
 ├── results/
-│   ├── coming soon............
-│  
-│  
-├── requirements.txt              # Python dependencies
-├── .gitignore                 # Git ignore patterns
-
+│   ├── metrics/                 # Quantitative evaluation results
+│   ├── visualizations/          # Comparison images and plots
+│   └── model_comparison.png     # Visual comparison of model outputs
+│
+├── weekly logs/                 # Weekly progress logs
+│
+├── .dvcignore                   # DVC ignore patterns
+├── .gitattributes               # Git attributes configuration
+├── .gitignore                   # Git ignore patterns
+├── data.dvc                     # DVC data tracking file
+├── requirements.txt             # Python dependencies
+├── METHODOLOGY_AND_EXPERIMENTS.md  # Detailed methodology and experiments
 └── README.md                    # This file
 ```
 
