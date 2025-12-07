@@ -378,8 +378,7 @@ graph TB
 | **Best PSNR (Overall)** | 17.58 dB (ensemble) |
 | **Best PSNR (Single)** | 17.36 dB (VGG16 block1 + TransposedConv) |
 | **Worst PSNR** | 12.26 dB (VGG16 block5 + TransposedConv) |
-| **PSNR Range** | 5.32 dB |
-| **Total GPU Hours** | ~22 hours |
+| **Total GPU Hours** | ~18 hours for all the configuration|
 | **Avg Training Time** | ~30 min/model |
 
 ---
