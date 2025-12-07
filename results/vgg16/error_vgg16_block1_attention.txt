@@ -1,3 +1,0 @@
-Experiment: vgg16_block1_attention
-Error: IndexError
-Message: too many indices for array: array is 1-dimensional, but 2 were indexed
