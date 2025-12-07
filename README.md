@@ -219,8 +219,17 @@ CV_Final_Project/
 │   └── evaluate.py              # Main evaluation script
 │
 ├── results/
-│   ├── metrics/                 # Quantitative evaluation results
-│   ├── visualizations/          # Comparison images and plots
+│   ├── single/                  # Single architecture experiment results
+│   │   ├── checkpoints_vgg16_block1_transposed_conv/
+│   │   │   ├── vgg16_block1_transposed_conv_best.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch10.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch20.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch30.pth
+│   │   │   └── vgg16_block1_transposed_conv_final.pth
+│   │   └── evaluation_vgg16_block1_transposed_conv/
+│   │       ├── metrics/         # Quantitative metrics (CSV, JSON)
+│   │       └── visualizations/  # Per-image comparison results
+│   ├
 │   └── model_comparison.png     # Visual comparison of model outputs
 │
 ├── weekly logs/                 # Weekly progress logs
@@ -231,7 +240,7 @@ CV_Final_Project/
 ├── data.dvc                     # DVC data tracking file
 ├── requirements.txt             # Python dependencies
 ├── METHODOLOGY_AND_EXPERIMENTS.md  # Detailed methodology and experiments
-└── README.md                    # This file
+└── README.md                    # This file                  # This file
 ```
 
 
