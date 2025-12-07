@@ -375,8 +375,6 @@ graph TB
 
 | Metric | Value |
 |--------|-------|
-| **Total Configurations** | 44 (32 single + 12 ensemble) |
-| **Successful Runs** | 43 |
 | **Best PSNR (Overall)** | 17.58 dB (ensemble) |
 | **Best PSNR (Single)** | 17.36 dB (VGG16 block1 + TransposedConv) |
 | **Worst PSNR** | 12.26 dB (VGG16 block5 + TransposedConv) |
