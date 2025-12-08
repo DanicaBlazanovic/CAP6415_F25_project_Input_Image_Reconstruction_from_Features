@@ -162,10 +162,10 @@ graph LR
 
 | Decoder | PSNR (dB) | SSIM | Params | Eval Time |
 |---------|-----------|------|--------|-----------|
-| **TransposedConv** | **17.36 ± 1.76** | **0.547 ± 0.121** | **~200K** | **0.90 min** |
-| Wavelet | 17.15 ± 1.68 | 0.553 ± 0.122 | ~400K | 0.87 min |
-| FrequencyAware | 16.91 ± 1.75 | 0.544 ± 0.113 | ~350K | 0.88 min |
-| Attention | 12.99 ± 2.58 | 0.380 ± 0.119 | ~2.5M | 0.85 min |
+| **TransposedConv** | **17.36 ± 1.76** | **0.547 ± 0.121** | **~34K** | **0.90 min** |
+| Wavelet | 17.15 ± 1.68 | 0.553 ± 0.122 | ~2.7M | 0.87 min |
+| FrequencyAware | 16.91 ± 1.75 | 0.544 ± 0.113 | ~366K | 0.88 min |
+| Attention | 12.99 ± 2.58 | 0.380 ± 0.119 | ~234K | 0.85 min |
 
 **Finding:** Simple TransposedConv achieves best PSNR despite **12x fewer parameters** than Attention decoder. Complex decoders hurt performance (Attention: -25.2% PSNR).
 
@@ -248,8 +248,8 @@ graph TB
 **Conclusion:** Each 2x spatial reduction costs ~10-15% PSNR.
 
 ### 6.3 Simple Decoders Outperform Complex Ones
-- **TransposedConv (simple):** 17.36 dB, 200K params
-- **Attention (complex):** 12.99 dB, 2.5M params (-25.2%)
+- **TransposedConv (simple):** 17.36 dB, 34K params
+- **Attention (complex):** 12.99 dB, 234K params (-25.2%)
 
 **Conclusion:** Decoder simplicity prevents overfitting on limited data (640 images).
 
