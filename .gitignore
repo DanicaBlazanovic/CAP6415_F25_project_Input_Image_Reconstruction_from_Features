@@ -17,3 +17,7 @@ Icon?
 Icon
 Save from Project/
 scripts/train_fixed.py
+results/
+*.pth
+CV_Final_Project_Video/
+parameters.py
