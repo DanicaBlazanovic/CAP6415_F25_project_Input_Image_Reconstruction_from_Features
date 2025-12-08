@@ -2,7 +2,7 @@
 WEEK 5 LOG - CAP6415 Computer Vision Final Project
 Input Image Reconstruction from CNN Features
 Team: Danica Blazanovic, Abbas Khan
-Date: December 2-4, 2025
+Date: December 2-7, 2025
 ================================================================================
 
 PROJECT STATUS: Code Complete, Documentation Complete, Testing Complete,
@@ -40,7 +40,7 @@ ACCOMPLISHMENTS
    - Professional presentation quality
 
 5. VIDEO PRESENTATION PREPARATION
-   - Working on it
+   - Done, recorded and submitted
 
 
 ================================================================================
@@ -53,8 +53,7 @@ DELIVERABLES CREATED
 4. training.py (production, documented, renamed)
 5. utils.py (production, documented)
 6. README_revised.md (concise, professional)
-7. video_presentation_script.md (10-11 min narration)
-8. week5log.txt (this file)
+7. week5log.txt (this file)
 
 
 
@@ -82,11 +81,9 @@ Best Experimental Results:
 REMAINING TASKS
 ================================================================================
 
-- Record 10-11 minute video presentation
-- Final project submission
-- Code and documentation review
+- Just to check everyting one more time.
 
 ================================================================================
 
 Status: All Week 5 objectives completed successfully
-Last Updated: December 4, 2025
+Last Updated: December 7, 2025
