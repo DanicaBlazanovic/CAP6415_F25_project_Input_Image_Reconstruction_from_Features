@@ -132,12 +132,6 @@ This standard 640/160/100 (train/val/test) split ensures our reconstruction qual
 - CUDA-capable GPU (recommended)
 
 
-**Hardware used in this study:**
-- GPU: NVIDIA RTX 6000 Ada Generation (48GB VRAM)
-- CUDA: 12.4
-- Driver: 550.107.02
-
-
 ### Setup
 
 ```bash
@@ -179,22 +173,22 @@ seaborn>=0.12.0
 ### 1. Run Complete Experiment Suite
 ```bash
 # Train single experiment
-python train.py --arch vgg16 --layer block1 --decoder transposed_conv
+python scripts/train.py --arch vgg16 --layer block1 --decoder transposed_conv
 
 # Train ensemble
-python train.py --arch ensemble --fusion attention --decoder transposed_conv
+python scripts/train.py --arch ensemble --fusion attention --decoder transposed_conv
 
 # Train all experiments
-python train.py --mode all
+python scripts/train.py --mode all
 
 # Evaluate single experiment
-python evaluate.py --arch vgg16 --layer block1 --decoder transposed_conv
+python  scripts/evaluate.py --arch vgg16 --layer block1 --decoder transposed_conv
 
 # Evaluate ensemble
-python evaluate.py --arch ensemble --fusion attention --decoder transposed_conv
+python scripts/evaluate.py --arch ensemble --fusion attention --decoder transposed_conv
 
 # Evaluate all experiments
-python evaluate.py --mode all
+python scripts/evaluate.py --mode all
 ```
 
 ---
@@ -219,8 +213,17 @@ CV_Final_Project/
 │   └── evaluate.py              # Main evaluation script
 │
 ├── results/
-│   ├── metrics/                 # Quantitative evaluation results
-│   ├── visualizations/          # Comparison images and plots
+│   ├── single/                  # Single architecture experiment results
+│   │   ├── checkpoints_vgg16_block1_transposed_conv/
+│   │   │   ├── vgg16_block1_transposed_conv_best.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch10.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch20.pth
+│   │   │   ├── vgg16_block1_transposed_conv_epoch30.pth
+│   │   │   └── vgg16_block1_transposed_conv_final.pth
+│   │   └── evaluation_vgg16_block1_transposed_conv/
+│   │       ├── metrics/         # Quantitative metrics (CSV, JSON)
+│   │       └── visualizations/  # Per-image comparison results
+│   ├
 │   └── model_comparison.png     # Visual comparison of model outputs
 │
 ├── weekly logs/                 # Weekly progress logs
@@ -231,7 +234,7 @@ CV_Final_Project/
 ├── data.dvc                     # DVC data tracking file
 ├── requirements.txt             # Python dependencies
 ├── METHODOLOGY_AND_EXPERIMENTS.md  # Detailed methodology and experiments
-└── README.md                    # This file
+└── README.md                    # This file                  # This file
 ```
 
 
