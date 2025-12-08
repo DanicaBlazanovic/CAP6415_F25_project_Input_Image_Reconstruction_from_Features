@@ -571,7 +571,14 @@ def train_single_experiment(architecture, layer, decoder, fusion=None):
     print(f"Training time: {train_time/60:.2f} minutes ({train_time/3600:.2f} hours)")
     print(f"Best epoch: {history['best_epoch']}/{exp_config['epochs']}")
     print(f"Best validation loss: {history['best_val_loss']:.6f}")
-    print(f"Final training loss: {history['train_losses'][-1]:.6f}")
+    
+    # Safe access to training loss - handle different key names from training.py
+    # The history dictionary may use 'train_loss' or 'train_losses' depending on version
+    if 'train_loss' in history and len(history['train_loss']) > 0:
+        print(f"Final training loss: {history['train_loss'][-1]:.6f}")
+    elif 'train_losses' in history and len(history['train_losses']) > 0:
+        print(f"Final training loss: {history['train_losses'][-1]:.6f}")
+    # If neither key exists, skip printing final training loss (not critical information)
     
     # Determine checkpoint location based on model type
     model_type = 'ensemble' if architecture == 'ensemble' else 'single'
