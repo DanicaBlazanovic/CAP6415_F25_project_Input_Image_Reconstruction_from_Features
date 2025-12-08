@@ -209,20 +209,17 @@ graph LR
 
 ---
 
-## 5. Top-10 Model Ranking
+## 5. Top-6 Model Ranking
 
-| Rank | Architecture | Layer | Decoder | PSNR (dB) | SSIM | Type |
-|------|--------------|-------|---------|-----------|------|------|
-| 1 | Ensemble | All | Attention + TransposedConv | 17.58 ± 1.68 | 0.581 | Ensemble |
-| 2 | Ensemble | All | Weighted + TransposedConv | 17.41 ± 1.60 | 0.562 | Ensemble |
-| **3** | **VGG16** | **block1** | **TransposedConv** | **17.36 ± 1.76** | **0.547** | **Single** |
-| 4 | Ensemble | All | Concat + FrequencyAware | 17.39 ± 1.51 | 0.569 | Ensemble |
-| 5 | Ensemble | All | Weighted + FrequencyAware | 17.34 ± 1.59 | 0.578 | Ensemble |
-| 6 | Ensemble | All | Concat + Wavelet | 17.33 ± 1.63 | 0.582 | Ensemble |
-| 7 | VGG16 | block1 | Wavelet | 17.15 ± 1.68 | 0.553 | Single |
-| 8 | VGG16 | block1 | FrequencyAware | 16.91 ± 1.75 | 0.544 | Single |
-| 9 | PVT-v2-B2 | stage1 | TransposedConv | 16.54 ± 1.81 | 0.533 | Single |
-| 10 | PVT-v2-B2 | stage1 | Attention | 16.28 ± 1.87 | 0.517 | Single |
+| Rank | Model Configuration | PSNR (dB) | SSIM | Type |
+|:----:|---------------------|:---------:|:----:|:----:|
+| 1 | **Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Attention Fusion + Transposed Conv** | **17.58 ± 1.68** | **0.581 ± 0.117** | Ensemble |
+| 2 | **VGG16 Block1 + Transposed Conv** | **17.36 ± 1.76** | **0.547 ± 0.121** | **Single (Best)** |
+| 3 | Ensemble (ResNet34 + VGG16 + ViT + PVT-v2) Concat + Wavelet | 17.33 ± 1.63 | **0.582 ± 0.110** | Ensemble |
+| 4 | PVT-v2-B2 Stage1 + Wavelet | 15.86 ± 1.78 | 0.495 ± 0.107 | Single |
+| 5 | ResNet34 Layer1 + Wavelet | 15.65 ± 2.27 | 0.509 ± 0.095 | Single |
+| 6 | ViT Small Block1 + Attention | 15.41 ± 1.84 | 0.445 ± 0.111 | Single |
+| — | **ResNet34 Layer1 + Attention (Baseline)** | **13.53 ± 2.48** | **0.376 ± 0.118** | Single |
 
 ---
 
