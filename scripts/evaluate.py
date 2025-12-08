@@ -15,7 +15,7 @@ Key Features:
 
 Usage Examples:
     # Evaluate single model
-    python evaluate.py --arch vgg16 --layer block1 --decoder simple
+    python evaluate.py --arch vgg16 --layer block1 --decoder transposed_conv
     
     # Evaluate ensemble
     python evaluate.py --arch ensemble --fusion attention --decoder simple
