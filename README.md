@@ -220,10 +220,13 @@ CV_Final_Project/
 │   │   │   ├── vgg16_block1_transposed_conv_epoch20.pth
 │   │   │   ├── vgg16_block1_transposed_conv_epoch30.pth
 │   │   │   └── vgg16_block1_transposed_conv_final.pth
+│   │   ├── training_vgg16_block1_transposed_conv/
+│   │   │   ├── history_vgg16_block1_transposed_conv.png  # Training curves
+│   │   │   └── vgg16_block1_transposed_conv_history.csv  # Training metrics
 │   │   └── evaluation_vgg16_block1_transposed_conv/
 │   │       ├── metrics/         # Quantitative metrics (CSV, JSON)
 │   │       └── visualizations/  # Per-image comparison results
-│   ├
+│   │
 │   └── model_comparison.png     # Visual comparison of model outputs
 │
 ├── weekly logs/                 # Weekly progress logs
@@ -234,7 +237,8 @@ CV_Final_Project/
 ├── data.dvc                     # DVC data tracking file
 ├── requirements.txt             # Python dependencies
 ├── METHODOLOGY_AND_EXPERIMENTS.md  # Detailed methodology and experiments
-└── README.md                    # This file                  # This file
+└── README.md                    # This file
+
 ```
 
 
