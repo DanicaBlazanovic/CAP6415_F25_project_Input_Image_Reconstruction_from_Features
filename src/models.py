@@ -2065,7 +2065,8 @@ class FeatureFusionModule(nn.Module):
         # Sort keys for deterministic order (important for weighted fusion)
         for name in sorted(features_dict.keys()):
             # Project to target channels via 1×1 conv
-            feat = self.channel_aligners[name](features_dict[name])
+            # Make contiguous for MPS compatibility
+            feat = self.channel_aligners[name](features_dict[name].contiguous())
             
             # Step 3: Spatial alignment via bilinear interpolation
             # Only interpolate if spatial size doesn't match target

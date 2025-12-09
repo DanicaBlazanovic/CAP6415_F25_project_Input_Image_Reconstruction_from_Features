@@ -186,9 +186,9 @@ Output Directory Structure:
     │   │   ├── {exp_name}_epoch10.pth    (periodic)
     │   │   ├── {exp_name}_epoch20.pth
     │   │   └── {exp_name}_final.pth      (last epoch)
-    │   ├── metrics_{exp_name}/
-    │   │   └── {exp_name}_history.csv    (per-epoch metrics)
-    │   └── history_{exp_name}.png         (training curves)
+    │   └── training_{exp_name}/
+    │       ├── {exp_name}_history.csv    (per-epoch metrics)
+    │       └── history_{exp_name}.png    (training curves)
     └── ensemble/                          (ensemble models)
         └── (same structure as single)
 
@@ -863,9 +863,9 @@ def train_model(model, train_loader, val_loader, config, device='cuda'):
     
     # ==================== SAVE METRICS ====================
     
-    # Create metrics directory for CSV and plots
-    metrics_dir = save_path / f"metrics_{arch_name}"
-    metrics_dir.mkdir(parents=True, exist_ok=True)
+    # Create training directory for CSV and plots
+    training_dir = save_path / f"training_{arch_name}"
+    training_dir.mkdir(parents=True, exist_ok=True)
     
     # Save training history to CSV
     # One row per epoch with all metrics
@@ -879,13 +879,13 @@ def train_model(model, train_loader, val_loader, config, device='cuda'):
         'val_mse': history['val_mse'],
         'val_lpips': history['val_lpips'],
         'learning_rate': history['learning_rates']
-    }).to_csv(metrics_dir / f"{arch_name}_history.csv", index=False)
+    }).to_csv(training_dir / f"{arch_name}_history.csv", index=False)
     
     # ==================== PLOT TRAINING CURVES ====================
     
     # Generate visualization of training history
     # Shows loss curves and learning rate over time
-    plot_history(history, save_path, arch_name)
+    plot_history(history, training_dir, arch_name)
     
     # ==================== PRINT SUMMARY ====================
     

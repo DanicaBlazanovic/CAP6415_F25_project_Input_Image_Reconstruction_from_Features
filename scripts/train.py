@@ -89,7 +89,7 @@ except ImportError as e:
     print(f"\n[HELP] Make sure the following files exist in the src/ folder:")
     print("  - models.py")
     print("  - dataset.py")
-    print("  - trainingl.py")
+    print("  - training.py")
     sys.exit(1)
 
 
@@ -432,8 +432,8 @@ def train_single_experiment(architecture, layer, decoder, fusion=None):
     Outputs:
         Saved to results/single/ or results/ensemble/:
         - checkpoints_{exp_name}/{exp_name}_best.pth: Best model weights
-        - training_history_{exp_name}.json: Loss curves and metrics
-        - training_config_{exp_name}.json: Complete configuration
+        - training_{exp_name}/history_{exp_name}.png: Training loss curves plot
+        - training_{exp_name}/{exp_name}_history.csv: Training metrics CSV
     
     Example:
         >>> train_single_experiment('vgg16', 'block1', 'transposed_conv')
@@ -584,7 +584,9 @@ def train_single_experiment(architecture, layer, decoder, fusion=None):
     model_type = 'ensemble' if architecture == 'ensemble' else 'single'
     checkpoint_path = f"results/{model_type}/checkpoints_{exp_config['exp_name']}/{exp_config['exp_name']}_best.pth"
     print(f"Best checkpoint saved: {checkpoint_path}")
-    print(f"Training history saved: results/{model_type}/training_history_{exp_config['exp_name']}.json")
+    print(f"Training history saved: results/{model_type}/training_{exp_config['exp_name']}/")
+    print(f"  - Plot: history_{exp_config['exp_name']}.png")
+    print(f"  - Metrics: {exp_config['exp_name']}_history.csv")
     print(f"{'='*80}\n")
     
     # Memory cleanup
